@@ -72,7 +72,7 @@ class MatWrite(object):
                     oned_as=self.oned_as, long_field_names=True)
         except KeyError:  # pragma: no cover
             raise Exception('could not save mat file')
-        load_line = 'load {0} "{1}"'.format(self.in_file,
+        load_line = 'loadmatfile {0} "{1}"'.format(self.in_file,
                                           '" "'.join(argin_list))
         return argin_list, load_line
 

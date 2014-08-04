@@ -599,12 +599,15 @@ class _Session(object):
         rpipe, self.wfid = os.pipe()
         kwargs = dict(close_fds=ON_POSIX, bufsize=0, stdin=rpipe,
                       stderr=wpipe, stdout=wpipe)
+        proc_name = 'scilab'
         if os.name == 'nt':
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             kwargs['startupinfo'] = startupinfo
+            proc_name = 'Scilex'
+        print(proc_name)
         try:
-            proc = subprocess.Popen(['octave', '-q', '--braindead'],
+            proc = subprocess.Popen([proc_name, '-nwni'],
                                     **kwargs)
         except OSError:  # pragma: no cover
             raise Oct2PyError(errmsg)
@@ -636,12 +639,13 @@ class _Session(object):
                           and not i.strip().startswith(('%', '#'))])
 
         expr = '\n'.join(exprs)
-        expr = expr.replace('"', "'")
+        expr = expr.replace('"', '""')
         expr = expr.replace('\n', '\\n')
 
         output = "disp(char(2));"
-        output += """eval("%s\\ndisp(char(3))", """ % expr
-        output += """'disp(lasterr());disp(char(24))');\n"""
+        output += """if execstr('%s','errcatch') <>0 then;""" % expr
+        output += "disp(lasterror()); disp(char(24));"
+        output += "else; disp(char(3)); end;"
 
         if len(cmds) == 5:
             main_line = cmds[2].strip()
