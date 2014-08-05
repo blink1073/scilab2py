@@ -11,4 +11,4 @@ function [x, class] = roundtrip(y)
 
   end
 
-end
+endfunction

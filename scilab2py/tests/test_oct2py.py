@@ -1,5 +1,5 @@
 """
-oct2py_test - Test value passing between python and Octave.
+scilab2py_test - Test value passing between python and Scliab.
 
 Known limitations
 -----------------
@@ -23,11 +23,9 @@ import numpy as np
 import numpy.testing as test
 from numpy.testing.decorators import skipif
 
-
-import oct2py
-from oct2py import Oct2Py, Oct2PyError
-from oct2py.utils import Struct
-from oct2py.compat import unicode, long, StringIO
+from scilab2py import Scilab2Py, Scilab2PyError
+from scilab2py.utils import Struct
+from scilab2py.compat import unicode, long, StringIO
 
 
 TYPE_CONVERSIONS = [
@@ -75,34 +73,34 @@ class ConversionTest(test.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.oc = Oct2Py()
+        cls.sci = Scilab2Py()
 
     @classmethod
     def tearDownClass(cls):
-        cls.oc.close()
+        cls.sci.close()
 
     def test_python_conversions(self):
         """Test roundtrip python type conversions
         """
-        self.oc.addpath(os.path.dirname(__file__))
-        for out_type, oct_type, in_type in TYPE_CONVERSIONS:
+        self.sci.addpath(os.path.dirname(__file__))
+        for out_type, sci_type, in_type in TYPE_CONVERSIONS:
             if out_type == dict:
                 outgoing = dict(x=1)
             elif out_type is None:
                 outgoing = None
             else:
                 outgoing = out_type(1)
-            incoming, octave_type = self.oc.roundtrip(outgoing)
-            if octave_type == 'int32' and oct_type == 'int64':
+            incoming, scilab_type = self.sci.roundtrip(outgoing)
+            if scilab_type == 'int32' and sci_type == 'int64':
                 pass
-            elif octave_type == 'char' and oct_type == 'cell':
+            elif scilab_type == 'char' and sci_type == 'cell':
                 pass
-            elif octave_type == 'single' and oct_type == 'double':
+            elif scilab_type == 'single' and sci_type == 'double':
                 pass
-            elif octave_type == 'int64' and oct_type == 'int32':
+            elif scilab_type == 'int64' and sci_type == 'int32':
                 pass
             else:
-                assert octave_type == oct_type
+                assert scilab_type == sci_type
             if type(incoming) != in_type:
                 if type(incoming) == np.int32 and in_type == np.int64:
                     pass
@@ -111,18 +109,18 @@ class ConversionTest(test.TestCase):
 
 
 class IncomingTest(test.TestCase):
-    """Test the importing of all Octave data types, checking their type
+    """Test the importing of all Scilab data types, checking their type
 
-    Uses test_datatypes.m to read in a dictionary with all Octave types
+    Uses test_datatypes.m to read in a dictionary with all Scilab types
     Tests the types of all the values to make sure they were
         brought in properly.
 
     """
     @classmethod
     def setUpClass(cls):
-        with Oct2Py() as oc:
-            oc.addpath(os.path.dirname(__file__))
-            cls.data = oc.test_datatypes()
+        with Scilab2Py() as sci:
+            sci.addpath(os.path.dirname(__file__))
+            cls.data = sci.test_datatypes()
 
     def helper(self, base, keys, types):
         """
@@ -205,22 +203,22 @@ class IncomingTest(test.TestCase):
 
 
 class RoundtripTest(test.TestCase):
-    """Test roundtrip value and type preservation between Python and Octave.
+    """Test roundtrip value and type preservation between Python and Scilab.
 
-    Uses test_datatypes.m to read in a dictionary with all Octave types
+    Uses test_datatypes.m to read in a dictionary with all Scilab types
     uses roundtrip.m to send each of the values out and back,
         making sure the value and the type are preserved.
 
     """
     @classmethod
     def setUpClass(cls):
-        cls.oc = Oct2Py()
-        cls.oc.addpath(os.path.dirname(__file__))
-        cls.data = cls.oc.test_datatypes()
+        cls.sci = Scilab2Py()
+        cls.sci.addpath(os.path.dirname(__file__))
+        cls.data = cls.sci.test_datatypes()
 
     @classmethod
     def tearDownClass(cls):
-        cls.oc.close()
+        cls.sci.close()
 
     def nested_equal(self, val1, val2):
         """Test for equality in a nested list or ndarray
@@ -251,10 +249,10 @@ class RoundtripTest(test.TestCase):
         Parameters
         ==========
         outgoing : object
-            Object to send to Octave.
+            Object to send to Scilab.
 
         """
-        incoming = self.oc.roundtrip(outgoing)
+        incoming = self.sci.roundtrip(outgoing)
         if expected_type is None:
             expected_type = type(outgoing)
         self.nested_equal(incoming, outgoing)
@@ -309,20 +307,20 @@ class RoundtripTest(test.TestCase):
             self.helper(self.data.cell[key])
         #self.helper(DATA.cell['array'], np.ndarray)
 
-    def test_octave_origin(self):
-        '''Test all of the types, originating in octave, and returning
+    def test_scilab_origin(self):
+        '''Test all of the types, originating in scilab, and returning
         '''
-        self.oc.run('x = test_datatypes()')
-        self.oc.put('y', self.data)
+        self.sci.run('x = test_datatypes()')
+        self.sci.put('y', self.data)
         try:
-            self.oc.isequaln
+            self.sci.isequaln
             func = 'isequaln'
-        except Oct2PyError:
+        except Scilab2PyError:
             func = 'isequalwithequalnans'
         for key in self.data.keys():
             if key != 'struct_array':
                 cmd = '{0}(x.{1},y.{1})'.format(func, key)
-                ret = self.oc.run(cmd)
+                ret = self.sci.run(cmd)
                 assert ret == 'ans =  1'
 
 
@@ -335,12 +333,12 @@ class BuiltinsTest(test.TestCase):
     """
     @classmethod
     def setUpClass(cls):
-        cls.oc = Oct2Py()
-        cls.oc.addpath(os.path.dirname(__file__))
+        cls.sci = Scilab2Py()
+        cls.sci.addpath(os.path.dirname(__file__))
 
     @classmethod
     def tearDownClass(cls):
-        cls.oc.close()
+        cls.sci.close()
 
     def helper(self, outgoing, incoming=None, expected_type=None):
         """
@@ -349,13 +347,13 @@ class BuiltinsTest(test.TestCase):
         Parameters
         ==========
         outgoing : object
-            Object to send to Octave
+            Object to send to Scilab
         incoming : object, optional
-            Object already retreived from Octave
+            Object already retreived from Scilab
 
         """
         if incoming is None:
-            incoming = self.oc.roundtrip(outgoing)
+            incoming = self.sci.roundtrip(outgoing)
         if not expected_type:
             for out_type, _, in_type in TYPE_CONVERSIONS:
                 if out_type == type(outgoing):
@@ -368,14 +366,14 @@ class BuiltinsTest(test.TestCase):
         except ValueError:
             assert np.allclose(np.array(incoming), np.array(outgoing))
         if type(incoming) != expected_type:
-            incoming = self.oc.roundtrip(outgoing)
+            incoming = self.sci.roundtrip(outgoing)
             assert expected_type(incoming) == incoming
 
     def test_dict(self):
         """Test python dictionary
         """
         test = dict(x='spam', y=[1, 2, 3])
-        incoming = self.oc.roundtrip(test)
+        incoming = self.sci.roundtrip(test)
         #incoming = dict(incoming)
         for key in incoming:
             self.helper(test[key], incoming[key])
@@ -384,7 +382,7 @@ class BuiltinsTest(test.TestCase):
         """Test nested python dictionary
         """
         test = dict(x=dict(y=1e3, z=[1, 2]), y='spam')
-        incoming = self.oc.roundtrip(test)
+        incoming = self.sci.roundtrip(test)
         incoming = dict(incoming)
         for key in test:
             if isinstance(test[key], dict):
@@ -397,7 +395,7 @@ class BuiltinsTest(test.TestCase):
         """Test python set type
         """
         test = set((1, 2, 3, 3))
-        incoming = self.oc.roundtrip(test)
+        incoming = self.sci.roundtrip(test)
         assert np.allclose(tuple(test), incoming)
         self.assertEqual(type(incoming), np.ndarray)
 
@@ -444,7 +442,7 @@ class BuiltinsTest(test.TestCase):
         test = [[1, 2], [3, 4]]
         self.helper(test)
         test = [[1, 2], [3, 4, 5]]
-        incoming = self.oc.roundtrip(test)
+        incoming = self.sci.roundtrip(test)
         for i in range(len(test)):
             assert np.alltrue(incoming[i] == np.array(test[i]))
 
@@ -453,14 +451,14 @@ class BuiltinsTest(test.TestCase):
         """
         tests = (True, False)
         for test in tests:
-            incoming = self.oc.roundtrip(test)
+            incoming = self.sci.roundtrip(test)
             self.assertEqual(incoming, test)
             self.assertEqual(incoming.dtype, np.dtype('int8'))
 
     def test_none(self):
         """Test sending None type
         """
-        incoming = self.oc.roundtrip(None)
+        incoming = self.sci.roundtrip(None)
         assert np.isnan(incoming)
 
 
@@ -473,12 +471,12 @@ class NumpyTest(test.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.oc = Oct2Py()
-        cls.oc.addpath(os.path.dirname(__file__))
+        cls.sci = Scilab2Py()
+        cls.sci.addpath(os.path.dirname(__file__))
 
     @classmethod
     def tearDownClass(cls):
-        cls.oc.close()
+        cls.sci.close()
 
     def test_scalars(self):
         """Send scalar numpy types and make sure we get the same number back.
@@ -491,9 +489,9 @@ class NumpyTest(test.TestCase):
                 continue
             if (typecode in self.blacklist_codes or
                     outgoing.dtype.name in self.blacklist_names):
-                self.assertRaises(Oct2PyError, self.oc.roundtrip, outgoing)
+                self.assertRaises(Scilab2PyError, self.sci.roundtrip, outgoing)
                 continue
-            incoming = self.oc.roundtrip(outgoing)
+            incoming = self.sci.roundtrip(outgoing)
             if outgoing.dtype.str in ['<M8[us]', '<m8[us]']:
                 outgoing = outgoing.astype(np.uint64)
             try:
@@ -526,9 +524,9 @@ class NumpyTest(test.TestCase):
                         continue
                 if (typecode in self.blacklist_codes or
                         outgoing.dtype.name in self.blacklist_names):
-                    self.assertRaises(Oct2PyError, self.oc.roundtrip, outgoing)
+                    self.assertRaises(Scilab2PyError, self.sci.roundtrip, outgoing)
                     continue
-                incoming = self.oc.roundtrip(outgoing)
+                incoming = self.sci.roundtrip(outgoing)
                 incoming = np.array(incoming)
                 if outgoing.size == 1:
                     outgoing = outgoing.squeeze()
@@ -558,7 +556,7 @@ class NumpyTest(test.TestCase):
         rand = csr_matrix(rand)
         iden = identity(1000)
         for item in [rand, iden]:
-            incoming, type_ = self.oc.roundtrip(item)
+            incoming, type_ = self.sci.roundtrip(item)
             assert item.shape == incoming.shape
             assert item.nnz == incoming.nnz
             assert np.allclose(item.todense(), incoming.todense())
@@ -569,7 +567,7 @@ class NumpyTest(test.TestCase):
         '''Test roundtrip empty matrices
         '''
         empty = np.empty((100, 100))
-        incoming, type_ = self.oc.roundtrip(empty)
+        incoming, type_ = self.sci.roundtrip(empty)
         assert empty.squeeze().shape == incoming.squeeze().shape
         assert np.allclose(empty[np.isfinite(empty)],
                            incoming[np.isfinite(incoming)])
@@ -580,7 +578,7 @@ class NumpyTest(test.TestCase):
         '''
         test = np.random.rand(1000)
         test = np.mat(test)
-        incoming, type_ = self.oc.roundtrip(test)
+        incoming, type_ = self.sci.roundtrip(test)
         assert np.allclose(test, incoming)
         assert test.dtype == incoming.dtype
         assert type_ == 'double'
@@ -590,7 +588,7 @@ class NumpyTest(test.TestCase):
         '''
         test = np.random.rand(100)
         test = np.ma.array(test)
-        incoming, type_ = self.oc.roundtrip(test)
+        incoming, type_ = self.sci.roundtrip(test)
         assert np.allclose(test, incoming)
         assert test.dtype == incoming.dtype
         assert type_ == 'double'
@@ -600,13 +598,13 @@ class BasicUsageTest(test.TestCase):
     """Excercise the basic interface of the package
     """
     def setUp(self):
-        self.oc = Oct2Py()
-        self.oc.addpath(os.path.dirname(__file__))
+        self.sci = Scilab2Py()
+        self.sci.addpath(os.path.dirname(__file__))
 
     def test_run(self):
         """Test the run command
         """
-        out = self.oc.run('y=ones(3,3)')
+        out = self.sci.run('y=ones(3,3)')
         desired = """y =
 
         1        1        1
@@ -614,71 +612,65 @@ class BasicUsageTest(test.TestCase):
         1        1        1
 """
         self.assertEqual(out, desired)
-        out = self.oc.run('x = mean([[1, 2], [3, 4]])', verbose=True)
+        out = self.sci.run('x = mean([[1, 2], [3, 4]])', verbose=True)
         self.assertEqual(out, 'x =  2.5000')
-        self.assertRaises(Oct2PyError, self.oc.run, '_spam')
+        self.assertRaises(Scilab2PyError, self.sci.run, '_spam')
 
     def test_call(self):
         """Test the call command
         """
-        out = self.oc.call('ones', 1, 2)
+        out = self.sci.call('ones', 1, 2)
         assert np.allclose(out, np.ones((1, 2)))
-        U, S, V = self.oc.call('svd', [[1, 2], [1, 3]])
+        U, S, V = self.sci.call('svd', [[1, 2], [1, 3]])
         assert np.allclose(U, ([[-0.57604844, -0.81741556],
                            [-0.81741556, 0.57604844]]))
         assert np.allclose(S,  ([[3.86432845, 0.],
                            [0., 0.25877718]]))
         assert np.allclose(V,  ([[-0.36059668, -0.93272184],
                            [-0.93272184, 0.36059668]]))
-        out = self.oc.call('roundtrip.m', 1)
+        out = self.sci.call('roundtrip.m', 1)
         self.assertEqual(out, 1)
         fname = os.path.join(__file__, 'roundtrip.m')
-        out = self.oc.call(fname, 1)
+        out = self.sci.call(fname, 1)
         self.assertEqual(out, 1)
-        self.assertRaises(Oct2PyError, self.oc.call, '_spam')
+        self.assertRaises(Scilab2PyError, self.sci.call, '_spam')
 
     def test_put_get(self):
         """Test putting and getting values
         """
-        self.oc.put('spam', [1, 2])
-        out = self.oc.get('spam')
+        self.sci.put('spam', [1, 2])
+        out = self.sci.get('spam')
         assert np.allclose(out, np.array([1, 2]))
-        self.oc.put(['spam', 'eggs'], ['foo', [1, 2, 3, 4]])
-        spam, eggs = self.oc.get(['spam', 'eggs'])
+        self.sci.put(['spam', 'eggs'], ['foo', [1, 2, 3, 4]])
+        spam, eggs = self.sci.get(['spam', 'eggs'])
         self.assertEqual(spam, 'foo')
         assert np.allclose(eggs, np.array([[1, 2, 3, 4]]))
-        self.assertRaises(Oct2PyError, self.oc.put, '_spam', 1)
-        self.assertRaises(Oct2PyError, self.oc.get, '_spam')
-
-    def test_help(self):
-        """Testing help command
-        """
-        doc = self.oc.cos.__doc__
-        assert 'Compute the cosine for each element of X in radians.' in doc
+        self.assertRaises(Scilab2PyError, self.sci.put, '_spam', 1)
+        self.assertRaises(Scilab2PyError, self.sci.get, '_spam')
 
     def test_dynamic(self):
         """Test the creation of a dynamic function
         """
-        tests = [self.oc.zeros, self.oc.ones, self.oc.plot]
+        tests = [self.sci.zeros, self.sci.ones, self.sci.plot]
         for item in tests:
             try:
                 self.assertEqual(repr(type(item)), "<type 'function'>")
             except AssertionError:
                 self.assertEqual(repr(type(item)), "<class 'function'>")
-        self.assertRaises(Oct2PyError, self.oc.__getattr__, 'aaldkfasd')
-        self.assertRaises(Oct2PyError, self.oc.__getattr__, '_foo')
-        self.assertRaises(Oct2PyError, self.oc.__getattr__, 'foo\W')
+        self.assertRaises(Scilab2PyError, self.sci.__getattr__, 'aaldkfasd')
+        self.assertRaises(Scilab2PyError, self.sci.__getattr__, '_foo')
+        self.assertRaises(Scilab2PyError, self.sci.__getattr__, 'foo\W')
 
     def test_open_close(self):
-        """Test opening and closing the Octave session
+        """Test opening and closing the Scilab session
         """
-        oct_ = Oct2Py()
-        oct_.close()
-        self.assertRaises(Oct2PyError, oct_.put, names=['a'],
+        sci_ = Scilab2Py()
+        sci_.close()
+        self.assertRaises(Scilab2PyError, sci_.put, names=['a'],
                           var=[1.0])
-        oct_.restart()
-        oct_.put('a', 5)
-        a = oct_.get('a')
+        sci_.restart()
+        sci_.put('a', 5)
+        a = sci_.get('a')
         assert a == 5
 
     def test_struct(self):
@@ -698,52 +690,52 @@ class BasicUsageTest(test.TestCase):
         self.assertEqual(test2.foo.bar, 10)
 
     def test_syntax_error(self):
-        """Make sure a syntax error in Octave throws an Oct2PyError
+        """Make sure a syntax error in Scilab throws an Scilab2PyError
         """
-        oc = Oct2Py()
-        self.assertRaises(Oct2PyError, oc._eval, "a='1")
-        oc = Oct2Py()
-        self.assertRaises(Oct2PyError, oc._eval, "a=1++3")
+        sci = Scilab2Py()
+        self.assertRaises(Scilab2PyError, sci._eval, "a='1")
+        sci = Scilab2Py()
+        self.assertRaises(Scilab2PyError, sci._eval, "a=1++3")
 
-        oc.put('a', 1)
-        a = oc.get('a')
+        sci.put('a', 1)
+        a = sci.get('a')
         self.assertEqual(a, 1)
 
-    def test_octave_error(self):
-        oc = Oct2Py()
-        self.assertRaises(Oct2PyError, oc.run, 'a = ones2(1)')
+    def test_scilab_error(self):
+        sci = Scilab2Py()
+        self.assertRaises(Scilab2PyError, sci.run, 'a = ones2(1)')
 
 
 class MiscTests(test.TestCase):
 
     def setUp(self):
-        self.oc = Oct2Py()
-        self.oc.addpath(os.path.dirname(__file__))
+        self.sci = Scilab2Py()
+        self.sci.addpath(os.path.dirname(__file__))
 
     def tearDown(self):
-        self.oc.close()
+        self.sci.close()
 
     def test_unicode_docstring(self):
-        '''Make sure unicode docstrings in Octave functions work'''
-        help(self.oc.test_datatypes)
+        '''Make sure unicode docstrings in Scilab functions work'''
+        help(self.sci.test_datatypes)
 
     def test_context_manager(self):
-        '''Make sure oct2py works within a context manager'''
-        with self.oc as oc1:
-            ones = oc1.ones(1)
+        '''Make sure Scilab2Py works within a context manager'''
+        with self.sci as sci1:
+            ones = sci1.ones(1)
         assert ones == np.ones(1)
-        with self.oc as oc2:
-            ones = oc2.ones(1)
+        with self.sci as sci2:
+            ones = sci2.ones(1)
         assert ones == np.ones(1)
 
     def test_singleton_sparses(self):
         '''Make sure a singleton sparse matrix works'''
         import scipy.sparse
         data = scipy.sparse.csc.csc_matrix(1)
-        self.oc.put('x', data)
-        assert np.allclose(data.toarray(), self.oc.get('x').toarray())
-        self.oc.put('y', [data])
-        assert np.allclose(data.toarray(), self.oc.get('y').toarray())
+        self.sci.put('x', data)
+        assert np.allclose(data.toarray(), self.sci.get('x').toarray())
+        self.sci.put('y', [data])
+        assert np.allclose(data.toarray(), self.sci.get('y').toarray())
 
     def test_logging(self):
         # create a stringio and a handler to log to it
@@ -753,13 +745,13 @@ class MiscTests(test.TestCase):
             hdlr.setLevel(logging.DEBUG)
             return hdlr
         hdlr = get_handler()
-        self.oc.logger.addHandler(hdlr)
+        self.sci.logger.addHandler(hdlr)
 
         # generate some messages (logged and not logged)
-        self.oc.ones(1, verbose=True)
+        self.sci.ones(1, verbose=True)
 
-        self.oc.logger.setLevel(logging.DEBUG)
-        self.oc.zeros(1)
+        self.sci.logger.setLevel(logging.DEBUG)
+        self.sci.zeros(1)
 
         # check the output
         lines = hdlr.stream.getvalue().strip().split('\n')
@@ -769,15 +761,15 @@ class MiscTests(test.TestCase):
         assert lines[0].startswith('load')
 
         # now make an object with a desired logger
-        logger = oct2py.get_log('test')
+        logger = Scilab2Py.get_log('test')
         hdlr = get_handler()
         logger.addHandler(hdlr)
         logger.setLevel(logging.INFO)
-        with Oct2Py(logger=logger) as oc2:
+        with Scilab2Py(logger=logger) as sci2:
             # generate some messages (logged and not logged)
-            oc2.ones(1, verbose=True)
-            oc2.logger.setLevel(logging.DEBUG)
-            oc2.zeros(1)
+            sci2.ones(1, verbose=True)
+            sci2.logger.setLevel(logging.DEBUG)
+            sci2.zeros(1)
 
         # check the output
         lines = hdlr.stream.getvalue().strip().split('\n')
@@ -787,121 +779,114 @@ class MiscTests(test.TestCase):
         assert lines[0].startswith('load')
 
     def test_demo(self):
-        from oct2py import demo
+        from Scilab2Py import demo
         try:
             demo.demo(0.01, interactive=False)
         except AttributeError:
             demo(0.01, interactive=False)
 
     def test_lookfor(self):
-        assert 'cosd' in self.oc.lookfor('cos')
+        assert 'cosd' in self.sci.lookfor('cos')
 
     def test_remove_files(self):
-        from oct2py.utils import _remove_temp_files
+        from Scilab2Py.utils import _remove_temp_files
         _remove_temp_files()
 
     def test_threads(self):
-        from oct2py import thread_test
+        from Scilab2Py import thread_test
         thread_test()
 
     def test_plot(self):
-        n = self.oc.figure()
-        self.oc.plot([1, 2, 3])
-        self.oc.close_(n)
+        n = self.sci.figure()
+        self.sci.plot([1, 2, 3])
+        self.sci.close_(n)
 
     def test_narg_out(self):
-        s = self.oc.svd(np.array([[1, 2], [1, 3]]))
+        s = self.sci.svd(np.array([[1, 2], [1, 3]]))
         assert s.shape == (2, 1)
-        U, S, V = self.oc.svd([[1, 2], [1, 3]])
+        U, S, V = self.sci.svd([[1, 2], [1, 3]])
         assert U.shape == S.shape == V.shape == (2, 2)
 
     def test_help(self):
-        help(self.oc)
+        help(self.sci)
 
     def test_trailing_underscore(self):
-        x = self.oc.ones_()
+        x = self.sci.ones_()
         assert np.allclose(x, np.ones(1))
 
     def test_using_closed_session(self):
-        with Oct2Py() as oc:
-            oc.close()
-            test.assert_raises(Oct2PyError, oc.call, 'ones')
+        with Scilab2Py() as sci:
+            sci.close()
+            test.assert_raises(Scilab2PyError, sci.call, 'ones')
 
-    def test_keyboard(self):
-        self.oc._eval('a=1')
+    def test_pause(self):
+        self.sci._eval('a=1')
 
         stdin = sys.stdin
         stdout = sys.stdout
         output = StringIO()
         sys.stdin = StringIO('a\nexit')
-        self.oc._session.stdout = output
-        try:
-            self.oc.keyboard(timeout=3)
-        except Oct2PyError as e:  # pragma: no cover
-            if 'session timed out' in str(e).lower():
-                # the keyboard command is not supported
-                # (likely using Octave 3.2)
-                return
-            else:
-                raise(e)
+        self.sci._session.stdout = output
+        self.sci.pause(timeout=3)
+
         sys.stdin.flush()
         sys.stdin = stdin
-        self.oc._session.stdout = stdout
+        self.sci._session.stdout = stdout
 
         out = output.getvalue()
-        assert 'Entering Octave Debug Prompt...' in out
+        assert 'Entering Scilab Debug Prompt...' in out
         assert 'a =  1' in out
 
     def test_func_without_docstring(self):
-        out = self.oc.test_nodocstring(5)
+        out = self.sci.test_nodocstring(5)
         assert out == 5
-        assert 'user-defined function' in self.oc.test_nodocstring.__doc__
-        assert os.path.dirname(__file__) in self.oc.test_nodocstring.__doc__
+        assert 'user-defined function' in self.sci.test_nodocstring.__doc__
+        assert os.path.dirname(__file__) in self.sci.test_nodocstring.__doc__
 
     def test_func_noexist(self):
-        test.assert_raises(Oct2PyError, self.oc.call, 'oct2py_dummy')
+        test.assert_raises(Scilab2PyError, self.sci.call, 'Scilab2Py_dummy')
 
     def test_timeout(self):
-        with Oct2Py(timeout=2) as oc:
-            oc.sleep(2.1, timeout=5)
-            test.assert_raises(Oct2PyError, oc.sleep, 3)
+        with Scilab2Py(timeout=2) as sci:
+            sci.sleep(2.1, timeout=5)
+            test.assert_raises(Scilab2PyError, sci.sleep, 3)
 
     def test_call_path(self):
-        with Oct2Py() as oc:
-            oc.addpath(os.path.dirname(__file__))
-            DATA = oc.call('test_datatypes.m')
+        with Scilab2Py() as sci:
+            sci.addpath(os.path.dirname(__file__))
+            DATA = sci.call('test_datatypes.m')
         assert DATA.string.basic == 'spam'
 
-        with Oct2Py() as oc:
+        with Scilab2Py() as sci:
             path = os.path.join(os.path.dirname(__file__), 'test_datatypes.m')
-            DATA = oc.call(path)
+            DATA = sci.call(path)
         assert DATA.string.basic == 'spam'
 
     def test_long_variable_name(self):
         name = 'this_variable_name_is_over_32_char'
-        self.oc.put(name, 1)
-        x = self.oc.get(name)
+        self.sci.put(name, 1)
+        x = self.sci.get(name)
         assert x == 1
 
     def test_syntax_error_embedded(self):
-        test.assert_raises(Oct2PyError, self.oc.run, """eval("a='1")""")
-        self.oc.put('b', 1)
-        x = self.oc.get('b')
+        test.assert_raises(Scilab2PyError, self.sci.run, """eval("a='1")""")
+        self.sci.put('b', 1)
+        x = self.sci.get('b')
         assert x == 1
 
     def test_oned_as(self):
         x = np.ones(10)
-        self.oc.put('x', x)
-        assert self.oc.get('x').shape == x[:, np.newaxis].T.shape
-        oc = Oct2Py(oned_as='column')
-        oc.put('x', x)
-        assert oc.get('x').shape == x[:, np.newaxis].shape
+        self.sci.put('x', x)
+        assert self.sci.get('x').shape == x[:, np.newaxis].T.shape
+        sci = Scilab2Py(oned_as='column')
+        sci.put('x', x)
+        assert sci.get('x').shape == x[:, np.newaxis].shape
 
     def test_temp_dir(self):
-        oc = Oct2Py(temp_dir='.')
+        sci = Scilab2Py(temp_dir='.')
         thisdir = os.path.dirname(os.path.abspath('.'))
-        assert oc._reader.out_file.startswith(thisdir)
-        assert oc._writer.in_file.startswith(thisdir)
+        assert sci._reader.out_file.startswith(thisdir)
+        assert sci._writer.in_file.startswith(thisdir)
 
     @skipif(not hasattr(signal, 'alarm'))
     def test_interrupt(self):
@@ -912,18 +897,18 @@ class MiscTests(test.TestCase):
         signal.signal(signal.SIGALRM, receive_signal)
 
         signal.alarm(5)
-        self.oc.run("sleep(10);kladjflsd")
+        self.sci.run("sleep(10);kladjflsd")
 
-        self.oc.put('c', 10)
-        x = self.oc.get('c')
+        self.sci.put('c', 10)
+        x = self.sci.get('c')
         assert x == 10
 
     def test_clear(self):
         """Make sure clearing variables does not mess anything up."""
-        self.oc.clear()
+        self.sci.clear()
 
 
 if __name__ == '__main__':  # pragma: no cover
-    print('oct2py test')
+    print('Scilab2Py test')
     print('*' * 20)
     test.run_module_suite()
