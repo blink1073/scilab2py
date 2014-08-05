@@ -23,6 +23,9 @@ from .utils import get_nout, Oct2PyError, get_log
 from .compat import unicode, PY2, queue
 
 
+# TODO: do NOT call for help when creating a file
+#       HOW do we handling inline plotting?
+
 class Oct2Py(object):
 
     """Manages an Octave session.
@@ -176,16 +179,12 @@ class Oct2Py(object):
                [-0.93272184,  0.36059668]]))
 
         """
-        if self._first_run:
-            self._first_run = False
-            self._setup_session()
-
         verbose = kwargs.get('verbose', False)
         nout = kwargs.get('nout', get_nout())
         timeout = kwargs.get('timeout', self.timeout)
 
         # handle references to script names - and paths to them
-        if func.endswith('.m'):
+        if func.endswith('.sce'):
             if os.path.dirname(func):
                 self.addpath(os.path.dirname(func))
                 func = os.path.basename(func)
@@ -212,7 +211,7 @@ class Oct2Py(object):
             # run foo
             call_line += '{0}'.format(func)
 
-        pre_call = '\nglobal __oct2py_figures = [];\n'
+        pre_call = '\n__oct2py_figures = [];\n'
         post_call = ''
 
         if 'command' in kwargs and not '__ipy_figures' in func:
@@ -222,7 +221,7 @@ class Oct2Py(object):
                 call_line += ';\n'
             post_call += """
             # Save output of the last execution
-                if exist("ans") == 1
+                if exists("ans") == 1
                   _ = ans;
                 else
                   _ = "__no_answer";
@@ -232,7 +231,7 @@ class Oct2Py(object):
         # do not interfere with octavemagic logic
         if not "DefaultFigureCreateFcn" in call_line:
             post_call += """
-            if exist("__oct2py_figures")
+            if exists("__oct2py_figures")
                 for f = __oct2py_figures
                     try
                        refresh(f);
@@ -328,7 +327,7 @@ class Oct2Py(object):
             var = [var]
         # make sure the variable(s) exist
         for variable in var:
-            if self._eval("exist {0}".format(variable),
+            if self._eval('exists "{0}"'.format(variable),
                           verbose=False) == 'ans = 0' and not variable == '_':
                 raise Oct2PyError('{0} does not exist'.format(variable))
         argout_list, save_line = self._reader.setup(len(var), var)
@@ -448,7 +447,7 @@ class Oct2Py(object):
         """
         if name == 'keyboard':
             return 'Built-in Function: keyboard ()'
-        exist = self._eval('exist {0}'.format(name), log=False, verbose=False)
+        exist = self._eval('exists "{0}"'.format(name), log=False, verbose=False)
         if exist.strip() == 'ans = 0':
             msg = 'Name: "%s" does not exist on the Octave session path'
             raise Oct2PyError(msg % name)
@@ -488,26 +487,10 @@ class Oct2Py(object):
         setattr(self, attr, octave_command)
         return octave_command
 
-    def _setup_session(self):
-        try:
-            self._eval("graphics_toolkit('gnuplot')", verbose=False)
-        except Oct2PyError:  # pragma: no cover
-            pass
-        # set up the plot renderer
-        self.run("""
-        function fig_create(src, event)
-            global __oct2py_figures;
-          __oct2py_figures(size(__oct2py_figures) + 1) = src;
-        end
-        page_screen_output(0);
-        set(0, 'DefaultFigureCreateFcn', @fig_create);
-        """)
-
     def restart(self):
         """Restart an Octave session in a clean state
         """
         self._session = _Session()
-        self._first_run = True
         self._reader = MatRead(self._temp_dir)
         self._writer = MatWrite(self._temp_dir, self._oned_as)
 
@@ -605,9 +588,8 @@ class _Session(object):
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             kwargs['startupinfo'] = startupinfo
             proc_name = 'Scilex'
-        print(proc_name)
         try:
-            proc = subprocess.Popen([proc_name, '-nwni'],
+            proc = subprocess.Popen([proc_name, '-nw'],
                                     **kwargs)
         except OSError:  # pragma: no cover
             raise Oct2PyError(errmsg)
@@ -640,12 +622,13 @@ class _Session(object):
 
         expr = '\n'.join(exprs)
         expr = expr.replace('"', '""')
-        expr = expr.replace('\n', '\\n')
+        expr = expr.replace("'", "''")
+        expr = expr.replace('\n', ';')
 
         output = "disp(char(2));"
-        output += """if execstr('%s','errcatch') <>0 then;""" % expr
+        output += """if execstr("%s;","errcatch") <>0 then;""" % expr
         output += "disp(lasterror()); disp(char(24));"
-        output += "else; disp(char(3)); end;"
+        output += "else; disp(char(3)); end;\n"
 
         if len(cmds) == 5:
             main_line = cmds[2].strip()
