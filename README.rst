@@ -42,7 +42,7 @@ Features
 - Optional timeout command parameter to prevent runaway Scilab sessions.
 
 
-.. _OctaveMagic: http://nbviewer.ipython.org/github/blink1073/scilab2py/blob/master/example/scilabmagic_extension.ipynb?create=1
+.. _ScilabMagic: http://nbviewer.ipython.org/github/blink1073/scilab2py/blob/master/example/scilabmagic_extension.ipynb?create=1
 
 
 Installation
