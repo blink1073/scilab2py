@@ -1,4 +1,4 @@
-Oct2py is written and maintained by Steven Silvester and
+Scilab2Py is written and maintained by Steven Silvester and
 various contributors:
 
 Development Lead
@@ -10,18 +10,4 @@ Development Lead
 Patches and Suggestions
 ```````````````````````
 
-- Stefan van der Walt @stefanv
-- Jens H Nielsen @jenshnielsen
-- @idella
-- @klonuo
-- Juan Luis Cano Rodríguez @Juanlu001
-- @bj0
-- Thomas Grainger @graingert
-- @jordigh
-- @wannesm
-- Konstantin Markov
-- Benedikt Sauer @filmore
-- Jason Moore @moorepants
-- @andrewbolster
-- @zimoun
-- @takluyver
+-
