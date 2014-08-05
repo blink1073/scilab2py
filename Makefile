@@ -1,4 +1,4 @@
-# Note: This is meant for Oct2Py developer use only
+# Note: This is meant for Scilab2Py developer use only
 .PHONY: all clean test cover release gh-pages
 
 export TEST_ARGS="--exe -v --processes=1 --process-timeout=20 --process-restartworker --with-doctest"
@@ -24,7 +24,7 @@ test:
 cover:
 	make clean
 	pip install nose-cov
-	nosetests -v --exe --with-cov --cov oct2py --cov-config .coveragerc oct2py
+	nosetests -v --exe --with-cov --cov scilab2py --cov-config .coveragerc scilab2py
 	coverage annotate
 
 release:

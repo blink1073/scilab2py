@@ -1,18 +1,18 @@
-"""Setup script for oct2py package.
+"""Setup script for Scilab2Py package.
 """
-DISTNAME = 'oct2py'
-DESCRIPTION = 'Python to GNU Octave bridge --> run m-files from python.'
+DISTNAME = 'scilab2py'
+DESCRIPTION = 'Python to Scilab bridge'
 LONG_DESCRIPTION = open('README.rst', 'rb').read().decode('utf-8')
 MAINTAINER = 'Steven Silvester'
 MAINTAINER_EMAIL = 'steven.silvester@ieee.org'
-URL = 'http://github.com/blink1073/oct2py'
+URL = 'http://github.com/blink1073/scilab2py'
 LICENSE = 'MIT'
 REQUIRES = ["numpy (>= 1.6.2)", "scipy (>= 0.11.0)"]
-PACKAGES = [DISTNAME, '%s.tests' % DISTNAME, '%s/ipython' % DISTNAME, 
+PACKAGES = [DISTNAME, '%s.tests' % DISTNAME, '%s/ipython' % DISTNAME,
             '%s/ipython/tests' % DISTNAME]
 PACKAGE_DATA = {DISTNAME: ['tests/*.m']}
 CLASSIFIERS = """\
-Development Status :: 5 - Production/Stable
+Development Status :: 3 - Alpha
 Intended Audience :: Developers
 Intended Audience :: Science/Research
 License :: OSI Approved :: MIT License
@@ -31,7 +31,7 @@ except ImportError:
     from distutils.core import setup
 
 
-with open('oct2py/__init__.py', 'rb') as fid:
+with open('scilab2py/__init__.py', 'rb') as fid:
     for line in fid:
         line = line.decode('utf-8')
         if line.startswith('__version__'):

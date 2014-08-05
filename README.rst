@@ -1,57 +1,53 @@
-Oct2Py: Python to GNU Octave Bridge
+Scilab2Py: Python to Scilab Bridge
 ===================================
 
-.. image:: https://badge.fury.io/py/oct2py.png/
-    :target: http://badge.fury.io/py/oct2py
+.. image:: https://badge.fury.io/py/scilab2py.png/
+    :target: http://badge.fury.io/py/scilab2py
 
-.. image:: https://pypip.in/d/oct2py/badge.png
-        :target: https://crate.io/packages/oct2py/
+.. image:: https://pypip.in/d/scilab2py/badge.png
+        :target: https://crate.io/packages/scilab2py/
 
-.. image:: https://coveralls.io/repos/blink1073/oct2py/badge.png?branch=master
-  :target: https://coveralls.io/r/blink1073/oct2py
+.. image:: https://coveralls.io/repos/blink1073/scilab2py/badge.png?branch=master
+  :target: https://coveralls.io/r/blink1073/scilab22py
 
 
-Oct2Py is a means to seamlessly call M-files and Octave functions from Python.
-It manages the Octave session for you, sharing data behind the scenes using
+Scilab2Py is a means to seamlessly call Scilab functions and scripts from Python.
+It manages the Scilab session for you, sharing data behind the scenes using
 MAT files.  Usage is as simple as:
 
 .. code-block:: python
 
-    >>> oc = oct2py.Oct2Py() 
-    >>> x = oc.zeros(3,3)
+    >>> sci = scilab2py.Scilab2Py() 
+    >>> x = sci.zeros(3,3)
     >>> print x, x.dtype
     [[ 0.  0.  0.]
      [ 0.  0.  0.]
      [ 0.  0.  0.]] float64
     ...
 
-If you want to run legacy m-files, do not have MATLAB(TM), and do not fully
-trust a code translator, this is your library.  
-
 
 Features
 --------
 
-- Supports all Octave datatypes and most Python datatypes and Numpy dtypes.
-- Provides OctaveMagic_ for IPython, including inline plotting in notebooks.
+- Supports all Scilab datatypes and most Python datatypes and Numpy dtypes.
+- Provides ScilabMagic_ for IPython, including inline plotting in notebooks.
 - Supports cell arrays and structs with arbitrary nesting.
 - Supports sparse matrices.
-- Builds methods on the fly linked to Octave commands (e.g. `zeros` above).
+- Builds methods on the fly linked to Scilab commands (e.g. `zeros` above).
 - Nargout is automatically inferred by the number of return variables.
-- Thread-safety: each Oct2Py object uses an independent Octave session.
+- Thread-safety: each Scilab2Py object uses an independent Scilab session.
 - Can be used as a context manager.
 - Supports Unicode characters.
 - Supports logging of session commands.
-- Optional timeout command parameter to prevent runaway Octave sessions.
+- Optional timeout command parameter to prevent runaway Scilab sessions.
 
 
-.. _OctaveMagic: http://nbviewer.ipython.org/github/blink1073/oct2py/blob/master/example/octavemagic_extension.ipynb?create=1
+.. _OctaveMagic: http://nbviewer.ipython.org/github/blink1073/scilab2py/blob/master/example/scilabmagic_extension.ipynb?create=1
 
 
 Installation
 ------------
-You must have GNU Octave installed and in your PATH (versions 3.2-3.8). 
-On Windows, the easiest way to get Octave is to use an installer from SourceForge_.
+You must have Scilab installed and in your PATH. 
 You must have the Numpy and Scipy libraries installed.
 On Linux, it should be available from your package manager.  
 
@@ -59,7 +55,7 @@ To install Oct2Py, simply:
 
 .. code-block:: bash
 
-    $ pip install oct2py
+    $ pip install scilab2py
 
 
 Documentation
@@ -69,9 +65,6 @@ Documentation is available online_.
 
 For version information, see the Revision History_.
 
+.. _online: http://blink1073.github.io/scilab2py/docs/
 
-.. _SourceForge: http://sourceforge.net/projects/octave/files/Octave%20Windows%20binaries/
-
-.. _online: http://blink1073.github.io/oct2py/docs/
-
-.. _History: https://github.com/blink1073/oct2py/blob/master/HISTORY.rst
+.. _History: https://github.com/blink1073/scilab2py/blob/master/HISTORY.rst
