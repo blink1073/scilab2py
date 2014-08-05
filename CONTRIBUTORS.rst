@@ -10,4 +10,4 @@ Development Lead
 Patches and Suggestions
 ```````````````````````
 
--
+- Stefan van der Walt @stefanv
