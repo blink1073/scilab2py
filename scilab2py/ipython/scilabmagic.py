@@ -1,34 +1,34 @@
 # -*- coding: utf-8 -*-
 """
 ===========
-octavemagic
+scilabmagic
 ===========
 
-Magics for interacting with Octave via oct2py.
+Magics for interacting with Scilab via Scilab2Py.
 
 .. note::
 
-  The ``oct2py`` module needs to be installed separately and
+  The ``scilab2py`` module needs to be installed separately and
   can be obtained using ``easy_install`` or ``pip``.
 
-  You will also need a working copy of GNU Octave.
+  You will also need a working copy of Scilab.
 
 Usage
 =====
 
-To enable the magics below, execute ``%load_ext octavemagic``.
+To enable the magics below, execute ``%load_ext scilabmagic``.
 
-``%octave``
+``%scilab``
 
-{OCTAVE_DOC}
+{SCILAB_DOC}
 
-``%octave_push``
+``%scilab_push``
 
-{OCTAVE_PUSH_DOC}
+{SCILAB_PUSH_DOC}
 
-``%octave_pull``
+``%scilab_pull``
 
-{OCTAVE_PULL_DOC}
+{SCILAB_PULL_DOC}
 
 """
 
@@ -43,11 +43,10 @@ import tempfile
 from glob import glob
 import os
 from shutil import rmtree
-import sys
 import re
 
 import numpy as np
-import oct2py
+import scilab2py
 from xml.dom import minidom
 
 from IPython.core.displaypub import publish_display_data
@@ -61,7 +60,7 @@ from IPython.utils.py3compat import unicode_to_str
 from IPython.utils.text import dedent
 
 
-class OctaveMagicError(oct2py.Oct2PyError):
+class ScilabMagicError(scilab2py.Scilab2PyError):
     pass
 
 _mimetypes = {'png': 'image/png',
@@ -71,8 +70,8 @@ _mimetypes = {'png': 'image/png',
 
 
 @magics_class
-class OctaveMagics(Magics):
-    """A set of magics useful for interactive work with Octave via oct2py.
+class ScilabMagics(Magics):
+    """A set of magics useful for interactive work with Scilab via scilab2py.
     """
     def __init__(self, shell):
         """
@@ -81,13 +80,9 @@ class OctaveMagics(Magics):
         shell : IPython shell
 
         """
-        super(OctaveMagics, self).__init__(shell)
-        self._oct = oct2py.Oct2Py()
-        if sys.platform == 'win32':
-            # Use svg by default due to lack of Ghostscript on Windows Octave
-            self._plot_format = 'svg'
-        else:
-            self._plot_format = 'png'
+        super(ScilabMagics, self).__init__(shell)
+        self._sci = scilab2py.Scilab2Py()
+        self._plot_format = 'png'
 
         # Allow publish_display_data to be overridden for
         # testing purposes.
@@ -121,9 +116,9 @@ class OctaveMagics(Magics):
 
     @skip_doctest
     @line_magic
-    def octave_push(self, line):
+    def scilab_push(self, line):
         '''
-        Line-level magic that pushes a variable to Octave.
+        Line-level magic that pushes a variable to Scilab.
 
         `line` should be made up of whitespace separated variable names in the
         IPython namespace::
@@ -135,28 +130,28 @@ class OctaveMagics(Magics):
             In [9]: X.mean()
             Out[9]: 2.0
 
-            In [10]: %octave_push X
+            In [10]: %scilab_push X
 
-            In [11]: %octave mean(X)
+            In [11]: %scilab mean(X)
             Out[11]: 2.0
 
         '''
         inputs = line.split(' ')
         for input in inputs:
             input = unicode_to_str(input)
-            self._oct.put(input, self.shell.user_ns[input])
+            self._sci.put(input, self.shell.user_ns[input])
 
     @skip_doctest
     @line_magic
-    def octave_pull(self, line):
+    def scilab_pull(self, line):
         '''
-        Line-level magic that pulls a variable from Octave.
+        Line-level magic that pulls a variable from Scilab.
 
         ::
 
-            In [18]: _ = %octave x = [1 2; 3 4]; y = 'hello'
+            In [18]: _ = %scilab x = [1 2; 3 4]; y = 'hello'
 
-            In [19]: %octave_pull x y
+            In [19]: %scilab_pull x y
 
             In [20]: x
             Out[20]:
@@ -170,18 +165,18 @@ class OctaveMagics(Magics):
         outputs = line.split(' ')
         for output in outputs:
             output = unicode_to_str(output)
-            self.shell.push({output: self._oct.get(output)})
+            self.shell.push({output: self._sci.get(output)})
 
     @skip_doctest
     @magic_arguments()
     @argument(
         '-i', '--input', action='append',
-        help='Names of input variables to be pushed to Octave. Multiple names '
+        help='Names of input variables to be pushed to Scilab. Multiple names '
              'can be passed, separated by commas with no whitespace.'
         )
     @argument(
         '-o', '--output', action='append',
-        help='Names of variables to be pulled from Octave after executing cell '
+        help='Names of variables to be pulled from Scilab after executing cell '
              'body. Multiple names can be passed, separated by commas with no '
              'whitespace.'
         )
@@ -200,18 +195,18 @@ class OctaveMagics(Magics):
         nargs='*',
         )
     @line_cell_magic
-    def octave(self, line, cell=None, local_ns=None):
+    def scilab(self, line, cell=None, local_ns=None):
         '''
-        Execute code in Octave, and pull some of the results back into the
+        Execute code in Scilab, and pull some of the results back into the
         Python namespace::
 
-            In [9]: %octave X = [1 2; 3 4]; mean(X)
+            In [9]: %scilab X = [1 2; 3 4]; mean(X)
             Out[9]: array([[ 2., 3.]])
 
-        As a cell, this will run a block of Octave code, without returning any
+        As a cell, this will run a block of Scilab code, without returning any
         value::
 
-            In [10]: %%octave
+            In [10]: %%scilab
                ....: p = [-2, -1, 0, 1, 2]
                ....: polyout(p, 'x')
 
@@ -219,20 +214,20 @@ class OctaveMagics(Magics):
 
         In the notebook, plots are published as the output of the cell, e.g.::
 
-            %octave plot([1 2 3], [4 5 6])
+            %scilab plot([1 2 3], [4 5 6])
 
         will create a line plot.
 
-        Objects can be passed back and forth between Octave and IPython via the
+        Objects can be passed back and forth between Scilab and IPython via the
         -i and -o flags in line::
 
             In [14]: Z = np.array([1, 4, 5, 10])
 
-            In [15]: %octave -i Z mean(Z)
+            In [15]: %scilab -i Z mean(Z)
             Out[15]: array([ 5.])
 
 
-            In [16]: %octave -o W W = Z * mean(Z)
+            In [16]: %scilab -o W W = Z * mean(Z)
             Out[16]: array([  5.,  20.,  25.,  50.])
 
             In [17]: W
@@ -240,14 +235,14 @@ class OctaveMagics(Magics):
 
         The size and format of output plots can be specified::
 
-            In [18]: %%octave -s 600,800 -f svg
+            In [18]: %%scilab -s 600,800 -f svg
                 ...: plot([1, 2, 3]);
 
         '''
         # match current working directory
-        self._oct.cd(os.getcwd())
+        self._sci.cd(os.getcwd())
 
-        args = parse_argstring(self.octave, line)
+        args = parse_argstring(self.scilab, line)
 
         # arguments 'code' in line are prepended to the cell lines
         if cell is None:
@@ -270,7 +265,7 @@ class OctaveMagics(Magics):
                     val = local_ns[input]
                 except KeyError:
                     val = self.shell.user_ns[input]
-                self._oct.put(input, val)
+                self._sci.put(input, val)
 
         # generate plots in a temporary directory
         plot_dir = tempfile.mkdtemp().replace('\\', '/')
@@ -281,9 +276,6 @@ class OctaveMagics(Magics):
 
         if args.format is not None:
             plot_format = args.format
-        elif sys.platform == 'win32':
-            # Use svg by default due to lack of Ghostscript on Windows Octave
-            plot_format = 'svg'
         else:
             plot_format = 'png'
 
@@ -316,7 +308,7 @@ class OctaveMagics(Magics):
         end
 
         for f = __ipy_figures
-          outfile = sprintf('%(plot_dir)s/__ipy_oct_fig_%%03d.png', f);
+          outfile = sprintf('%(plot_dir)s/__ipy_sci_fig_%%03d.png', f);
           try
             print(f, outfile, '-d%(plot_format)s', '-tight', '-S%(size)s');
           end
@@ -326,17 +318,17 @@ class OctaveMagics(Magics):
 
         code = ' '.join((pre_call, code, post_call))
         try:
-            text_output = self._oct.run(code, verbose=False)
-        except (oct2py.Oct2PyError) as exception:
+            text_output = self._sci.run(code, verbose=False)
+        except (scilab2py.Scilab2PyError) as exception:
             msg = str(exception)
-            if 'Octave Syntax Error' in msg:
-                raise OctaveMagicError(msg)
+            if 'Scilab Syntax Error' in msg:
+                raise ScilabMagicError(msg)
             msg = msg.replace(pre_call.strip(), '')
             msg = msg.replace(post_call.strip(), '')
             msg = re.sub('"""\s+', '"""\n', msg)
             msg = re.sub('\s+"""', '\n"""', msg)
-            raise OctaveMagicError(msg)
-        key = 'OctaveMagic.Octave'
+            raise ScilabMagicError(msg)
+        key = 'ScilabMagic.Scilab'
         display_data = []
 
         # Publish text output
@@ -360,7 +352,7 @@ class OctaveMagics(Magics):
         if args.output:
             for output in ','.join(args.output).split(','):
                 output = unicode_to_str(output)
-                self.shell.push({output: self._oct.get(output)})
+                self.shell.push({output: self._sci.get(output)})
 
         for source, data in display_data:
             # source is deprecated in IPython 3.0.
@@ -369,11 +361,11 @@ class OctaveMagics(Magics):
 
         if return_output:
             try:
-                ans = self._oct.get('_')
-            except oct2py.Oct2PyError:
+                ans = self._sci.get('_')
+            except scilab2py.Scilab2PyError:
                 return
 
-            # Unfortunately, Octave doesn't have a "None" object,
+            # Unfortunately, Scilab doesn't have a "None" object,
             # so we can't return any NaN outputs
             if np.isscalar(ans) and np.isnan(ans):
                 ans = None
@@ -382,12 +374,13 @@ class OctaveMagics(Magics):
 
 
 __doc__ = __doc__.format(
-    OCTAVE_DOC=dedent(OctaveMagics.octave.__doc__),
-    OCTAVE_PUSH_DOC=dedent(OctaveMagics.octave_push.__doc__),
-    OCTAVE_PULL_DOC=dedent(OctaveMagics.octave_pull.__doc__)
+    SCILAB_DOC=dedent(ScilabMagics.scilab.__doc__),
+    SCILAB_PUSH_DOC=dedent(ScilabMagics.scilab_push.__doc__),
+    SCILAB_PULL_DOC=dedent(ScilabMagics.scilab_pull.__doc__)
     )
 
 
 def load_ipython_extension(ip):
     """Load the extension in IPython."""
-    ip.register_magics(OctaveMagics)
+    raise Exception
+    ip.register_magics(ScilabMagics)
