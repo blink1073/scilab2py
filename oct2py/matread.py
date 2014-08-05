@@ -10,7 +10,7 @@ import os
 import numpy as np
 from scipy.io import loadmat
 import scipy
-from .utils import Struct, create_file, Oct2PyError
+from .utils import Struct, create_file, Scilab2PyError
 
 
 class MatRead(object):
@@ -50,7 +50,7 @@ class MatRead(object):
                 argout_list.append("%s__" % chr(i + 97))
         if not os.path.exists(self.out_file):
             self.out_file = create_file(self.temp_dir)
-        save_line = 'save -v6 {0} {1}'.format(self.out_file,
+        save_line = 'savematfile -v6 {0} {1}'.format(self.out_file,
                                                   ' '.join(argout_list))
         return argout_list, save_line
 
@@ -85,7 +85,7 @@ class MatRead(object):
                     val = data[arg[:31]]
                 else:
                     msg = '%s not found in file %s' % (arg, self.out_file)
-                    raise Oct2PyError(msg)
+                    raise Scilab2PyError(msg)
             val = get_data(val)
             outputs.append(val)
         if len(outputs) > 1:
