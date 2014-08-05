@@ -10,7 +10,7 @@ import inspect
 import dis
 import tempfile
 import atexit
-from oct2py.compat import PY2
+from .compat import PY2
 
 
 def _remove_temp_files():
