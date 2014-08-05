@@ -23,8 +23,8 @@ from .utils import get_nout, Oct2PyError, get_log
 from .compat import unicode, PY2, queue
 
 
-# TODO: do NOT call for help when creating a file
-#       HOW do we handling inline plotting?
+# TODO: HOW do we handling inline plotting?
+#       Handle keyboard interaction
 
 class Oct2Py(object):
 
@@ -445,25 +445,12 @@ class Oct2Py(object):
            If the procedure or object does not exist.
 
         """
-        if name == 'keyboard':
-            return 'Built-in Function: keyboard ()'
         exist = self._eval('exists "{0}"'.format(name), log=False, verbose=False)
         if exist.strip() == 'ans = 0':
             msg = 'Name: "%s" does not exist on the Octave session path'
             raise Oct2PyError(msg % name)
-        doc = 'No documentation for %s' % name
-        try:
-            doc = self._eval('help {0}'.format(name), log=False, verbose=False)
-        except Oct2PyError as e:
-            if 'syntax error' in str(e):
-                raise(e)
-            try:
-                doc = self._eval('type {0}'.format(name), log=False,
-                                 verbose=False)
-                doc = '\n'.join(doc.splitlines()[:3])
-            except Oct2PyError as e:
-                pass
-        return doc
+        doc = '''No documentation available, use run("help('%s')")''' 
+        return doc % name
 
     def __getattr__(self, attr):
         """Automatically creates a wapper to an Octave function or object.
@@ -519,7 +506,6 @@ class _Reader(object):
         If there is a line with only a ">" char, put that on the queue
         """
         buf = ''
-        debug_prompt = re.compile(r'\A[\w]+>>? ')
         while 1:
             try:
                 buf += os.read(self.fid, 1024).decode('utf8')
@@ -530,9 +516,6 @@ class _Reader(object):
             for line in lines[:-1]:
                 self.queue.put(line)
             if buf.endswith('\n'):
-                self.queue.put(lines[-1])
-                buf = ''
-            elif re.match(debug_prompt, lines[-1]):
                 self.queue.put(lines[-1])
                 buf = ''
             else:
@@ -635,13 +618,11 @@ class _Session(object):
         else:
             main_line = '\n'.join(cmds)
 
-        if 'keyboard' in output:
-            self.write('keyboard\n')
-            self.interact()
-            return
-
         self.write(output)
         self.expect(chr(2))
+
+        debug_prompt = ("Type 'resume' or 'abort' to return to "
+                        "standard level prompt.")
 
         resp = []
         while 1:
@@ -656,8 +637,8 @@ class _Session(object):
                        .format(main_line, '\n'.join(resp)))
                 raise Oct2PyError(msg)
 
-            elif line.endswith('> '):
-                self.interact(line)
+            elif line.strip() == debug_prompt:
+                self.interact('-1->')
 
             if verbose and logger:
                 logger.info(line)
@@ -708,7 +689,7 @@ class _Session(object):
         """Write a message to the process using utf-8 encoding"""
         os.write(self.wfid, message.encode('utf-8'))
 
-    def interact(self, prompt='debug> '):
+    def interact(self, prompt='- 1->'):
         """Manage an Octave Debug Prompt interaction"""
         msg = 'Entering Octave Debug Prompt...\n%s' % prompt
         self.stdout.write(msg)
@@ -718,16 +699,19 @@ class _Session(object):
                 inp = inp_func() + '\n'
             except EOFError:
                 return
-            if inp in ['exit\n', 'quit\n', 'dbcont\n', 'dbquit\n',
+            if inp in ['exit\n', 'quit\n', 'resume\n', 'abort\n',
                        'exit()\n', 'quit()\n']:
-                inp = 'return\n'
-            self.write('disp(char(3));' + inp)
-            if inp == 'return\n':
-                self.write('return\n')
+                inp = 'resume\n'
+            self.write('disp(char(2));' + inp + 'disp(char(3))')
+            if inp == 'resume\n':
+                self.write('resume\n')
                 self.write('clear _\n')
                 return
-            self.expect('\x03')
-            self.stdout.write(self.expect(prompt))
+            print('here')
+            self.expect(chr(2))
+            print('and here')
+            self.stdout.write(self.expect(chr(3)))
+            print('and and here')
 
     def close(self):
         """Cleanly close an Octave session
