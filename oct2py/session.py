@@ -1,7 +1,7 @@
 """
 .. module:: session
-   :synopsis: Main module for oct2py package.
-              Contains the Octave session object Oct2Py
+   :synopsis: Main module for scilabpy package.
+              Contains the Scilab session object Scilab2Py
 
 .. moduleauthor:: Steven Silvester <steven.silvester@ieee.org>
 
@@ -19,22 +19,34 @@ import time
 
 from .matwrite import MatWrite
 from .matread import MatRead
-from .utils import get_nout, Oct2PyError, get_log
+from .utils import get_nout, Scilab2PyError, get_log
 from .compat import unicode, PY2, queue
 
+"""
+//set the default size and location of graphics windows
+h = gdf()
+h.figure_position = [0, 0]
+h.figure_size = [0, 0]
+h.auto_resize = 'off'
 
-# TODO: HOW do we handling inline plotting?
-#       Handle keyboard interaction
+//save and close all opened graphic windows 
+function handle_all_fig() 
+   ids_array=winsid(); 
+   for i=1:length(ids_array) 
+      id=ids_array(i); 
+      xs2bmp(id, msprintf('%d.bmp', id))
+      close(get_figure_handle(id)); 
+   end 
+endfunction 
+"""
 
-class Oct2Py(object):
+class Scilab2Py(object):
 
-    """Manages an Octave session.
+    """Manages a Scliab session.
 
-    Uses MAT files to pass data between Octave and Numpy.
-    The function must either exist as an m-file in this directory or
-    on Octave's path.
-    The first command will take about 0.5s for Octave to load up.
-    The subsequent commands will be much faster.
+    Uses MAT files to pass data between Scilab and Numpy.
+    The function must either exist as an file in this directory or
+    on Scilab's path.
 
     You may provide a logger object for logging events, or the oct2py.get_log()
     default will be used.  Events will be logged as debug unless verbose is set
@@ -43,7 +55,7 @@ class Oct2Py(object):
     Parameters
     ----------
     logger : logging object, optional
-        Optional logger to use for Oct2Py session
+        Optional logger to use for Scilab2Py session
     timeout : float, opional
         Timeout in seconds for commands
     oned_as : {'row', 'column'}, optional
@@ -57,7 +69,7 @@ class Oct2Py(object):
 
     def __init__(self, logger=None, timeout=-1, oned_as='row',
                  temp_dir=None):
-        """Start Octave and create our MAT helpers
+        """Start Scilab and create our MAT helpers
         """
         self._oned_as = oned_as
         self._temp_dir = temp_dir
@@ -70,7 +82,7 @@ class Oct2Py(object):
         self.restart()
 
     def __enter__(self):
-        """Return octave object, restart session if necessary"""
+        """Return Scilab object, restart session if necessary"""
         if not self._session:
             self.restart()
         return self
@@ -80,7 +92,7 @@ class Oct2Py(object):
         self.close()
 
     def close(self):
-        """Closes this octave session and removes temp files
+        """Closes this Scilab session and removes temp files
         """
         if self._session:
             self._session.close()
@@ -88,34 +100,34 @@ class Oct2Py(object):
         try:
             self._writer.remove_file()
             self._reader.remove_file()
-        except Oct2PyError:
+        except Scilab2PyError:
             pass
 
     def run(self, script, **kwargs):
         """
-        Run artibrary Octave code.
+        Run artibrary Scilab code.
 
         Parameters
         -----------
         script : str
-            Command script to send to Octave for execution.
+            Command script to send to Scilab for execution.
         verbose : bool, optional
-            Log Octave output at info level.
+            Log Scilab output at info level.
 
         Returns
         -------
         out : str
-            Octave printed output.
+            Scilab printed output.
 
         Raises
         ------
-        Oct2PyError
-            If the script cannot be run by Octave.
+        Scilab2PyError
+            If the script cannot be run by Scilab.
 
         Examples
         --------
-        >>> from oct2py import octave
-        >>> out = octave.run('y=ones(3,3)')
+        >>> from oct2py import scilab
+        >>> out = scilab.run('y=ones(3,3)')
         >>> print(out)
         y =
         <BLANKLINE>
@@ -123,7 +135,7 @@ class Oct2Py(object):
                 1        1        1
                 1        1        1
         <BLANKLINE>
-        >>> octave.run('x = mean([[1, 2], [3, 4]])')
+        >>> scilab.run('x = mean([[1, 2], [3, 4]])')
         u'x =  2.5000'
 
         """
@@ -133,7 +145,7 @@ class Oct2Py(object):
 
     def call(self, func, *inputs, **kwargs):
         """
-        Call an Octave function with optional arguments.
+        Call an Scilab function with optional arguments.
 
         Parameters
         ----------
@@ -148,30 +160,30 @@ class Oct2Py(object):
             You can override this behavior by passing a
             different value.
         verbose : bool, optional
-             Log Octave output at info level.
+             Log Scilab output at info level.
 
         Returns
         -------
         out : str or tuple
-            If nout > 0, returns the values from Octave as a tuple.
-            Otherwise, returns the output displayed by Octave.
+            If nout > 0, returns the values from Scilab as a tuple.
+            Otherwise, returns the output displayed by Scilab.
 
         Raises
         ------
-        Oct2PyError
+        Scilab2PyError
             If the call is unsucessful.
 
         Examples
         --------
-        >>> from oct2py import octave
-        >>> b = octave.call('ones', 1, 2)
+        >>> from oct2py import scilab
+        >>> b = scilab.call('ones', 1, 2)
         >>> print(b)
         [[ 1.  1.]]
         >>> x, y = 1, 2
-        >>> a = octave.call('zeros', x, y)
+        >>> a = scilab.call('zeros', x, y)
         >>> a
         array([[ 0.,  0.]])
-        >>> U, S, V = octave.call('svd', [[1, 2], [1, 3]])
+        >>> U, S, V = scilab.call('svd', [[1, 2], [1, 3]])
         >>> print((U, S, V))
         (array([[-0.57604844, -0.81741556],
                [-0.81741556,  0.57604844]]), array([[ 3.86432845,  0.        ],
@@ -190,7 +202,7 @@ class Oct2Py(object):
                 func = os.path.basename(func)
             func = func[:-2]
 
-        # these three lines will form the commands sent to Octave
+        # these three lines will form the commands sent to Scilab
         # load("-v6", "infile", "invar1", ...)
         # [a, b, c] = foo(A, B, C)
         # save("-v6", "outfile", "outvar1", ...)
@@ -228,7 +240,7 @@ class Oct2Py(object):
                 end
             """
 
-        # do not interfere with octavemagic logic
+        # do not interfere with scilabmagic logic
         if not "DefaultFigureCreateFcn" in call_line:
             post_call += """
             if exists("__oct2py_figures")
@@ -239,7 +251,7 @@ class Oct2Py(object):
                 end
             end"""
 
-        # create the command and execute in octave
+        # create the command and execute in Scilab
         cmd = [load_line, pre_call, call_line, post_call, save_line]
         resp = self._eval(cmd, verbose=verbose, timeout=timeout)
 
@@ -248,9 +260,9 @@ class Oct2Py(object):
         elif 'command' in kwargs:
             try:
                 ans = self.get('_')
-            except (KeyError, Oct2PyError):
+            except (KeyError, Scilab2PyError):
                 return
-            # Unfortunately, Octave doesn't have a "None" object,
+            # Unfortunately, Scilab doesn't have a "None" object,
             # so we can't return any NaN outputs
             if isinstance(ans, (str, unicode)) and ans == "__no_answer":
                 ans = None
@@ -260,7 +272,7 @@ class Oct2Py(object):
 
     def put(self, names, var, verbose=False, timeout=-1):
         """
-        Put a variable into the Octave session.
+        Put a variable into the Scilab session.
 
         Parameters
         ----------
@@ -269,17 +281,17 @@ class Oct2Py(object):
         var : object or list
             The value(s) to pass.
         timeout : float
-            Time to wait for response from Octave (per character).
+            Time to wait for response from Scilab (per character).
 
         Examples
         --------
-        >>> from oct2py import octave
+        >>> from oct2py import scilab
         >>> y = [1, 2]
-        >>> octave.put('y', y)
-        >>> octave.get('y')
+        >>> scilab.put('y', y)
+        >>> scilab.get('y')
         array([[1, 2]])
-        >>> octave.put(['x', 'y'], ['spam', [1, 2, 3, 4]])
-        >>> octave.get(['x', 'y'])
+        >>> scilab.put(['x', 'y'], ['spam', [1, 2, 3, 4]])
+        >>> scilab.get(['x', 'y'])
         (u'spam', array([[1, 2, 3, 4]]))
 
         """
@@ -288,38 +300,38 @@ class Oct2Py(object):
             names = [names]
         for name in names:
             if name.startswith('_'):
-                raise Oct2PyError('Invalid name {0}'.format(name))
+                raise Scilab2PyError('Invalid name {0}'.format(name))
         _, load_line = self._writer.create_file(var, names)
         self._eval(load_line, verbose=verbose, timeout=timeout)
 
     def get(self, var, verbose=False, timeout=-1):
         """
-        Retrieve a value from the Octave session.
+        Retrieve a value from the Scilab session.
 
         Parameters
         ----------
         var : str
             Name of the variable to retrieve.
         timeout : float
-            Time to wait for response from Octave (per character).
+            Time to wait for response from Scilab (per character).
 
         Returns
         -------
         out : object
-            Object returned by Octave.
+            Object returned by Scilab.
 
         Raises:
-          Oct2PyError
-            If the variable does not exist in the Octave session.
+          Scilab2PyError
+            If the variable does not exist in the Scilab session.
 
         Examples:
-          >>> from oct2py import octave
+          >>> from oct2py import scilab
           >>> y = [1, 2]
-          >>> octave.put('y', y)
-          >>> octave.get('y')
+          >>> scilab.put('y', y)
+          >>> scilab.get('y')
           array([[1, 2]])
-          >>> octave.put(['x', 'y'], ['spam', [1, 2, 3, 4]])
-          >>> octave.get(['x', 'y'])
+          >>> scilab.put(['x', 'y'], ['spam', [1, 2, 3, 4]])
+          >>> scilab.get(['x', 'y'])
           (u'spam', array([[1, 2, 3, 4]]))
 
         """
@@ -329,14 +341,14 @@ class Oct2Py(object):
         for variable in var:
             if self._eval('exists "{0}"'.format(variable),
                           verbose=False) == 'ans = 0' and not variable == '_':
-                raise Oct2PyError('{0} does not exist'.format(variable))
+                raise Scilab2PyError('{0} does not exist'.format(variable))
         argout_list, save_line = self._reader.setup(len(var), var)
         self._eval(save_line, verbose=verbose, timeout=timeout)
         return self._reader.extract_file(argout_list)
 
     def lookfor(self, string, verbose=False, timeout=-1):
         """
-        Call the Octave "lookfor" command.
+        Call the Scilab "lookfor" command.
 
         Uses with the "-all" switch to search within help strings.
 
@@ -345,14 +357,14 @@ class Oct2Py(object):
         string : str
             Search string for the lookfor command.
         verbose : bool, optional
-             Log Octave output at info level.
+             Log Scilab output at info level.
         timeout : float
-            Time to wait for response from Octave (per character).
+            Time to wait for response from Scilab (per character).
 
         Returns
         -------
         out : str
-            Output from the Octave lookfor command.
+            Output from the Scilab lookfor command.
 
         """
         return self.run('lookfor -all {0}'.format(string), verbose=verbose,
@@ -360,7 +372,7 @@ class Oct2Py(object):
 
     def _eval(self, cmds, verbose=True, log=True, timeout=-1):
         """
-        Perform raw Octave command.
+        Perform raw Scilab command.
 
         This is a low-level command, and should not technically be used
         directly.  The API could change. You have been warned.
@@ -368,25 +380,25 @@ class Oct2Py(object):
         Parameters
         ----------
         cmds : str or list
-            Commands(s) to pass directly to Octave.
+            Commands(s) to pass directly to Scilab.
         verbose : bool, optional
-             Log Octave output at info level.
+             Log Scilab output at info level.
         timeout : float
-            Time to wait for response from Octave (per character).
+            Time to wait for response from Scilab (per character).
 
         Returns
         -------
         out : str
-            Results printed by Octave.
+            Results printed by Scilab.
 
         Raises
         ------
-        Oct2PyError
+        Scilab2PyError
             If the command(s) fail.
 
         """
         if not self._session:
-            raise Oct2PyError('No Octave Session')
+            raise Scilab2PyError('No Scilab Session')
         if isinstance(cmds, str):
             cmds = [cmds]
         if verbose and log:
@@ -400,16 +412,16 @@ class Oct2Py(object):
                                           timeout=timeout)
         except KeyboardInterrupt:
             self._session.interrupt()
-            return 'Octave Session Interrupted'
+            return 'Scilab Session Interrupted'
 
-    def _make_octave_command(self, name, doc=None):
-        """Create a wrapper to an Octave procedure or object
+    def _make_scilab_command(self, name, doc=None):
+        """Create a wrapper to an Scilab procedure or object
 
         Adapted from the mlabwrap project
 
         """
-        def octave_command(*args, **kwargs):
-            """ Octave command """
+        def scilab_command(*args, **kwargs):
+            """ Scilab command """
             kwargs['nout'] = get_nout()
             kwargs['verbose'] = kwargs.get('verbose', False)
             if not 'Built-in Function' in doc:
@@ -421,13 +433,13 @@ class Oct2Py(object):
             doc = doc.encode('ascii', 'replace').decode('ascii')
         except UnicodeDecodeError:
             pass
-        octave_command.__doc__ = "\n" + doc
-        octave_command.__name__ = name
-        return octave_command
+        scilab_command.__doc__ = "\n" + doc
+        scilab_command.__name__ = name
+        return scilab_command
 
     def _get_doc(self, name):
         """
-        Get the documentation of an Octave procedure or object.
+        Get the documentation of an Scilab procedure or object.
 
         Parameters
         ----------
@@ -441,26 +453,26 @@ class Oct2Py(object):
 
         Raises
         ------
-        Oct2PyError
+        Scilab2PyError
            If the procedure or object does not exist.
 
         """
         exist = self._eval('exists "{0}"'.format(name), log=False, verbose=False)
         if exist.strip() == 'ans = 0':
-            msg = 'Name: "%s" does not exist on the Octave session path'
-            raise Oct2PyError(msg % name)
+            msg = 'Name: "%s" does not exist on the Scilab session path'
+            raise Scilab2PyError(msg % name)
         doc = '''No documentation available, use run("help('%s')")''' 
         return doc % name
 
     def __getattr__(self, attr):
-        """Automatically creates a wapper to an Octave function or object.
+        """Automatically creates a wapper to an Scilab function or object.
 
         Adapted from the mlabwrap project.
 
         """
-        # needed for help(Oct2Py())
+        # needed for help(Scilab2Py())
         if attr == '__name__':
-            return super(Oct2Py, self).__getattr__(attr)
+            return super(Scilab2Py, self).__getattr__(attr)
         elif attr == '__file__':
             return __file__
         # close_ -> close
@@ -469,13 +481,13 @@ class Oct2Py(object):
         else:
             name = attr
         doc = self._get_doc(name)
-        octave_command = self._make_octave_command(name, doc)
+        scilab_command = self._make_scilab_command(name, doc)
         #!!! attr, *not* name, because we might have python keyword name!
-        setattr(self, attr, octave_command)
-        return octave_command
+        setattr(self, attr, scilab_command)
+        return scilab_command
 
     def restart(self):
-        """Restart an Octave session in a clean state
+        """Restart an Scilab session in a clean state
         """
         self._session = _Session()
         self._reader = MatRead(self._temp_dir)
@@ -490,7 +502,7 @@ class Oct2Py(object):
 
 class _Reader(object):
 
-    """Read characters from an Octave session in a thread.
+    """Read characters from an Scilab session in a thread.
     """
 
     def __init__(self, fid, queue):
@@ -524,7 +536,7 @@ class _Reader(object):
 
 class _Session(object):
 
-    """Low-level session Octave session interaction.
+    """Low-level session Scilab session interaction.
     """
 
     def __init__(self):
@@ -537,29 +549,29 @@ class _Session(object):
 
     def start(self):
         """
-        Start an octave session in a subprocess.
+        Start an scilab session in a subprocess.
 
         Returns
         =======
         out : fid
-            File descriptor for the Octave subprocess
+            File descriptor for the Scilab subprocess
 
         Raises
         ======
-        Oct2PyError
+        Scilab2PyError
             If the session is not opened sucessfully.
 
         Notes
         =====
-        Options sent to Octave: -q is quiet startup, --braindead is
+        Options sent to Scilab: -q is quiet startup, --braindead is
         Matlab compatibilty mode.
 
         """
         return self.start_subprocess()
 
     def start_subprocess(self):
-        """Start octave using a subprocess (no tty support)"""
-        errmsg = ('\n\nPlease install GNU Octave and put it in your path\n')
+        """Start scilab using a subprocess (no tty support)"""
+        errmsg = ('\n\nPlease install Scilab and put it in your path\n')
         ON_POSIX = 'posix' in sys.builtin_module_names
         self.rfid, wpipe = os.pipe()
         rpipe, self.wfid = os.pipe()
@@ -575,7 +587,7 @@ class _Session(object):
             proc = subprocess.Popen([proc_name, '-nw'],
                                     **kwargs)
         except OSError:  # pragma: no cover
-            raise Oct2PyError(errmsg)
+            raise Scilab2PyError(errmsg)
         else:
             self.reader = _Reader(self.rfid, self.read_queue)
             return proc
@@ -586,13 +598,13 @@ class _Session(object):
         self.timeout = timeout
 
     def evaluate(self, cmds, verbose=True, log=True, logger=None, timeout=-1):
-        """Perform the low-level interaction with an Octave Session
+        """Perform the low-level interaction with an Scilab Session
         """
         if not timeout == -1:
             self.set_timeout(timeout)
 
         if not self.proc:
-            raise Oct2PyError('Session Closed, try a restart()')
+            raise Scilab2PyError('Session Closed, try a restart()')
 
         # use ascii code 2 for start of text, 3 for end of text, and
         # 24 to signal an error
@@ -632,10 +644,10 @@ class _Session(object):
                 break
 
             elif chr(24) in line:
-                msg = ('Oct2Py tried to run:\n"""\n{0}\n"""\n'
-                       'Octave returned:\n{1}'
+                msg = ('Scilab2Py tried to run:\n"""\n{0}\n"""\n'
+                       'Scilab returned:\n{1}'
                        .format(main_line, '\n'.join(resp)))
-                raise Oct2PyError(msg)
+                raise Scilab2PyError(msg)
 
             elif line.strip() == debug_prompt:
                 self.interact('-1->')
@@ -683,38 +695,39 @@ class _Session(object):
             time.sleep(1e-6)
             if (time.time() - t0) > self.timeout:
                 self.close()
-                raise Oct2PyError('Session Timed Out, closing')
+                raise Scilab2PyError('Session Timed Out, closing')
 
     def write(self, message):
         """Write a message to the process using utf-8 encoding"""
         os.write(self.wfid, message.encode('utf-8'))
 
     def interact(self, prompt='- 1->'):
-        """Manage an Octave Debug Prompt interaction"""
-        msg = 'Entering Octave Debug Prompt...\n%s' % prompt
+        """Manage an Scilab Debug Prompt interaction"""
+        msg = 'Entering Scilab Debug Prompt...\n%s' % prompt
         self.stdout.write(msg)
         while 1:
             inp_func = input if not PY2 else raw_input
             try:
-                inp = inp_func() + '\n'
+                inp = inp_func()
             except EOFError:
                 return
-            if inp in ['exit\n', 'quit\n', 'resume\n', 'abort\n',
-                       'exit()\n', 'quit()\n']:
-                inp = 'resume\n'
-            self.write('disp(char(2));' + inp + 'disp(char(3))')
-            if inp == 'resume\n':
+            if inp in ['exit', 'quit', 'resume', 'abort',
+                       'exit()', 'quit()']:
+                inp = 'resume'
+            msg = 'disp(char(2));' + inp + '\ndisp(char(3))\n'
+            self.write(msg)
+            if inp == 'resume':
                 self.write('resume\n')
                 self.write('clear _\n')
                 return
-            print('here')
             self.expect(chr(2))
-            print('and here')
-            self.stdout.write(self.expect(chr(3)))
-            print('and and here')
+            output = self.expect(chr(3))
+            output = output[:output.index(chr(3))].rstrip()
+            self.stdout.write(output + '\n\n')
+            self.stdout.write(prompt)
 
     def close(self):
-        """Cleanly close an Octave session
+        """Cleanly close an Scilab session
         """
         try:
             self.proc.terminate()

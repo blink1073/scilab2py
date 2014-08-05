@@ -11,7 +11,7 @@ import os
 from scipy.io import savemat
 import numpy as np
 from scipy.sparse import csr_matrix, csc_matrix
-from .utils import Oct2PyError, create_file
+from .utils import Scilab2PyError, create_file
 from .compat import unicode
 
 
@@ -62,7 +62,7 @@ class MatWrite(object):
                     data[argin_list[-1]] = putvals(var)
                 else:
                     data[argin_list[-1]] = putval(var)
-            except Oct2PyError:
+            except Scilab2PyError:
                 raise
             ascii_code += 1
         if not os.path.exists(self.in_file):
@@ -138,7 +138,7 @@ def putval(data):
             try:
                 data = np.array(data, dtype=np.object)
             except ValueError as err:  # pragma: no cover
-                raise Oct2PyError(err)
+                raise Scilab2PyError(err)
         else:
             out = []
             for el in data:
@@ -161,11 +161,11 @@ def putval(data):
         data = np.array(data, dtype=object)
     dstr = data.dtype.str
     if 'c' in dstr and dstr[-2:] == '24':
-        raise Oct2PyError('Datatype not supported: {0}'.format(data.dtype))
+        raise Scilab2PyError('Datatype not supported: {0}'.format(data.dtype))
     elif 'f' in dstr and dstr[-2:] == '12':
-        raise Oct2PyError('Datatype not supported: {0}'.format(data.dtype))
+        raise Scilab2PyError('Datatype not supported: {0}'.format(data.dtype))
     elif 'V' in dstr:
-        raise Oct2PyError('Datatype not supported: {0}'.format(data.dtype))
+        raise Scilab2PyError('Datatype not supported: {0}'.format(data.dtype))
     elif dstr == '|b1':
         data = data.astype(np.int8)
     elif dstr == '<m8[us]' or dstr == '<M8[us]':
@@ -175,7 +175,7 @@ def putval(data):
     elif '<c' in dstr and np.alltrue(data.imag == 0):
         data.imag = 1e-9
     if data.dtype.name in ['float128', 'complex256']:
-        raise Oct2PyError('Datatype not supported: {0}'.format(data.dtype))
+        raise Scilab2PyError('Datatype not supported: {0}'.format(data.dtype))
     if data.dtype == 'object' and len(data.shape) > 1:
         data = data.T
     return data

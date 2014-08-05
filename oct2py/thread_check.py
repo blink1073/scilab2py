@@ -9,7 +9,7 @@
 from __future__ import print_function
 import threading
 import datetime
-from .session import Oct2Py, Oct2PyError
+from .session import Scilab2Py, Scilab2PyError
 
 
 class ThreadClass(threading.Thread):
@@ -22,27 +22,27 @@ class ThreadClass(threading.Thread):
 
         Raises
         ======
-        Oct2PyError
+        Scilab2PyError
             If the thread does not sucessfully demonstrate independence
 
         """
-        octave = Oct2Py()
+        scilab = Scilab2Py()
         # write the same variable name in each thread and read it back
-        octave.put('name', self.getName())
-        name = octave.get('name')
+        scilab.put('name', self.getName())
+        name = scilab.get('name')
         now = datetime.datetime.now()
         print("{0} got '{1}' at {2}".format(self.getName(), name, now))
-        octave.close()
+        scilab.close()
         try:
             assert self.getName() == name
         except AssertionError:  # pragma: no cover
-            raise Oct2PyError('Thread collision detected')
+            raise Scilab2PyError('Thread collision detected')
         return
 
 
 def thread_test(nthreads=3):
     """
-    Start a number of threads and verify each has a unique Octave session.
+    Start a number of threads and verify each has a unique Scilab2Py session.
 
     Parameters
     ==========
@@ -51,7 +51,7 @@ def thread_test(nthreads=3):
 
     Raises
     ======
-    Oct2PyError
+    Scilab2PyError
         If the thread does not sucessfully demonstrate independence.
 
     """

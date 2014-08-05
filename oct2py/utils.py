@@ -82,15 +82,15 @@ def create_file(temp_dir=None):
     return os.path.abspath(temp_file.name)
 
 
-class Oct2PyError(Exception):
-    """ Called when we can't open Octave or Octave throws an error
+class Scilab2PyError(Exception):
+    """ Called when we can't open Scilab or Scilab throws an error
     """
     pass
 
 
 class Struct(dict):
     """
-    Octave style struct, enhanced.
+    Scilab style struct, enhanced.
 
     Supports dictionary and attribute style access.  Can be pickled,
     and supports code completion in a REPL.

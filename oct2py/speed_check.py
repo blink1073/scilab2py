@@ -10,7 +10,7 @@ from __future__ import print_function
 import time
 import timeit
 import numpy as np
-from .session import Oct2Py
+from .session import Scilab2Py
 
 
 class SpeedCheck(object):
@@ -21,34 +21,34 @@ class SpeedCheck(object):
 
     """
     def __init__(self):
-        """Create our octave instance and initialize the data array
+        """Create our scilab instance and initialize the data array
         """
-        self.octave = Oct2Py()
+        self.scilab = Scilab2Py()
         self.array = []
 
     def raw_speed(self):
         """Run a fast matlab command and see how long it takes.
         """
-        self.octave.run("x = 1")
+        self.scilab.run("x = 1")
 
     def large_array_put(self):
-        """Create a large matrix and load it into the octave session.
+        """Create a large matrix and load it into the scilab session.
         """
-        self.octave.put('x', self.array)
+        self.scilab.put('x', self.array)
 
     def large_array_get(self):
-        """Retrieve the large matrix from the octave session
+        """Retrieve the large matrix from the scilab session
         """
-        self.octave.get('x')
+        self.scilab.get('x')
 
     def run(self):
-        """Perform the oct2py speed analysis.
+        """Perform the Scilab2Py speed analysis.
 
         Uses timeit to test the raw execution of an Octave command,
         Then tests progressively larger array passing.
 
         """
-        print('oct2py speed test')
+        print('Scilab2Py speed test')
         print('*' * 20)
         time.sleep(1)
 
@@ -67,15 +67,15 @@ class SpeedCheck(object):
             avg = timeit.timeit(self.large_array_get, number=nruns) / nruns
             print('    {0:0.01f} msec'.format(avg * 1e3))
 
-        self.octave.close()
+        self.scilab.close()
         print('*' * 20)
         print('Test complete!')
 
 
 def speed_test():
-    """Checks the speed penalty of the Python to Octave bridge.
+    """Checks the speed penalty of the Python to Scilab bridge.
 
-    Uses timeit to test the raw execution of a Octave command,
+    Uses timeit to test the raw execution of a Scliab command,
     Then tests progressively larger array passing.
 
     """
