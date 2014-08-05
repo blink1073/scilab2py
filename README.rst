@@ -51,7 +51,7 @@ You must have Scilab installed and in your PATH.
 You must have the Numpy and Scipy libraries installed.
 On Linux, it should be available from your package manager.  
 
-To install Oct2Py, simply:
+To install Scilab2Py, simply:
 
 .. code-block:: bash
 
