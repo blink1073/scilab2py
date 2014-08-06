@@ -382,8 +382,11 @@ class Scilab2Py(object):
             """ Scilab command """
             kwargs['nout'] = get_nout()
             kwargs['verbose'] = kwargs.get('verbose', False)
+            """
+            TODO: handle this better
             if not 'Built-in Function' in doc:
                 self._eval('clear("{0}")'.format(name), log=False, verbose=False)
+            """
             kwargs['command'] = True
             return self.call(name, *args, **kwargs)
         # convert to ascii for pydoc
@@ -416,7 +419,6 @@ class Scilab2Py(object):
 
         """
         exist = self._eval('exists("{0}")'.format(name), log=False, verbose=False)
-        print(exist)
         if '0.' in exist:
             msg = 'Name: "%s" does not exist on the Scilab session path'
             raise Scilab2PyError(msg % name)
@@ -439,7 +441,6 @@ class Scilab2Py(object):
             name = attr[:-1]
         else:
             name = attr
-        print('get doc')
         doc = self._get_doc(name)
         scilab_command = self._make_scilab_command(name, doc)
         #!!! attr, *not* name, because we might have python keyword name!
@@ -587,6 +588,8 @@ class _Session(object):
         output += "disp(lasterror()); disp(char(24));"
         output += "else; disp(char(3)); end;\n"
         output = output % expr
+
+        print(expr)
 
         if len(cmds) == 5:
             main_line = cmds[2].strip()

@@ -450,10 +450,16 @@ class BuiltinsTest(test.TestCase):
         """Test boolean values
         """
         tests = (True, False)
-        for test in tests:
-            incoming = self.sci.roundtrip(test)
-            self.assertEqual(incoming, test)
-            self.assertEqual(incoming.dtype, np.dtype('int8'))
+        for t in tests:
+            incoming = self.sci.roundtrip(t)
+            self.assertEqual(incoming, t)
+            self.assertEqual(incoming.dtype, np.float)
+        sci = Scilab2Py(as_float=False)
+        sci.getd(os.path.dirname(__file__))
+        for t in tests:
+            incoming = sci.roundtrip(t)
+            self.assertEqual(incoming, t)
+            self.assertEqual(incoming.dtype, np.int8)
 
     def test_none(self):
         """Test sending None type
@@ -604,16 +610,13 @@ class BasicUsageTest(test.TestCase):
     def test_run(self):
         """Test the run command
         """
-        out = self.sci.run('y=ones(3,3)')
-        desired = """y =
-
-        1        1        1
-        1        1        1
-        1        1        1
-"""
-        self.assertEqual(out, desired)
-        out = self.sci.run('x = mean([[1, 2], [3, 4]])', verbose=True)
-        self.assertEqual(out, 'x =  2.5000')
+        self.sci.run('y=ones(3,3)')
+        y = self.sci.get('y')
+        desired = np.ones((3, 3))
+        test.assert_allclose(y, desired)
+        self.sci.run('x = mean([[1, 2], [3, 4]])')
+        x = self.sci.get('x')
+        self.assertEqual(x, 2.5)
         self.assertRaises(Scilab2PyError, self.sci.run, '_spam')
 
     def test_call(self):
@@ -692,7 +695,7 @@ class BasicUsageTest(test.TestCase):
         sci = Scilab2Py()
         self.assertRaises(Scilab2PyError, sci._eval, "a='1")
         sci = Scilab2Py()
-        self.assertRaises(Scilab2PyError, sci._eval, "a=1++3")
+        self.assertRaises(Scilab2PyError, sci._eval, "a=1+*3")
 
         sci.put('a', 1)
         a = sci.get('a')
