@@ -20,9 +20,10 @@ class MatWrite(object):
 
     Strives to preserve both value and type in transit.
     """
-    def __init__(self, temp_dir=None, oned_as='row'):
+    def __init__(self, temp_dir=None, oned_as='row', as_float=True):
         self.oned_as = oned_as
         self.temp_dir = temp_dir
+        self.as_float = as_float
         self.in_file = create_file(self.temp_dir)
 
     def create_file(self, inputs, names=None):
@@ -59,9 +60,9 @@ class MatWrite(object):
             # for structs - recursively add the elements
             try:
                 if isinstance(var, dict):
-                    data[argin_list[-1]] = putvals(var)
+                    data[argin_list[-1]] = putvals(var, self.as_float)
                 else:
-                    data[argin_list[-1]] = putval(var)
+                    data[argin_list[-1]] = putval(var, self.as_float)
             except Scilab2PyError:
                 raise
             ascii_code += 1
@@ -83,7 +84,7 @@ class MatWrite(object):
             pass
 
 
-def putvals(dict_):
+def putvals(dict_, as_float=False):
     """
     Put a nested dict into the MAT file as a struct
 
@@ -101,13 +102,13 @@ def putvals(dict_):
     data = dict()
     for key in dict_.keys():
         if isinstance(dict_[key], dict):
-            data[key] = putvals(dict_[key])
+            data[key] = putvals(dict_[key], as_float)
         else:
-            data[key] = putval(dict_[key])
+            data[key] = putval(dict_[key], as_float)
     return data
 
 
-def putval(data):
+def putval(data, as_float=False):
     """
     Convert data into a state suitable for transfer.
 
@@ -178,6 +179,11 @@ def putval(data):
         raise Scilab2PyError('Datatype not supported: {0}'.format(data.dtype))
     if data.dtype == 'object' and len(data.shape) > 1:
         data = data.T
+    if as_float:
+        try:
+            data = data.astype(float)
+        except TypeError:
+            pass
     return data
 
 

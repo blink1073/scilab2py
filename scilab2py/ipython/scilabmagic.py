@@ -32,6 +32,24 @@ To enable the magics below, execute ``%load_ext scilabmagic``.
 
 """
 
+"""
+//set the default size and location of graphics windows
+h = gdf()
+h.figure_position = [0, 0]
+h.figure_size = [0, 0]
+h.auto_resize = 'off'
+
+//save and close all opened graphic windows 
+function handle_all_fig() 
+   ids_array=winsid(); 
+   for i=1:length(ids_array) 
+      id=ids_array(i); 
+      xs2bmp(id, msprintf('%d.bmp', id))
+      close(get_figure_handle(id)); 
+   end 
+endfunction 
+"""
+
 #-----------------------------------------------------------------------------
 #  Copyright (C) 2012 The IPython Development Team
 #

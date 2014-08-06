@@ -22,23 +22,6 @@ from .matread import MatRead
 from .utils import get_nout, Scilab2PyError, get_log
 from .compat import unicode, PY2, queue
 
-"""
-//set the default size and location of graphics windows
-h = gdf()
-h.figure_position = [0, 0]
-h.figure_size = [0, 0]
-h.auto_resize = 'off'
-
-//save and close all opened graphic windows 
-function handle_all_fig() 
-   ids_array=winsid(); 
-   for i=1:length(ids_array) 
-      id=ids_array(i); 
-      xs2bmp(id, msprintf('%d.bmp', id))
-      close(get_figure_handle(id)); 
-   end 
-endfunction 
-"""
 
 class Scilab2Py(object):
 
@@ -48,7 +31,7 @@ class Scilab2Py(object):
     The function must either exist as an file in this directory or
     on Scilab's path.
 
-    You may provide a logger object for logging events, or the oct2py.get_log()
+    You may provide a logger object for logging events, or the scilab.get_log()
     default will be used.  Events will be logged as debug unless verbose is set
     when calling a command, then they will be logged as info.
 
@@ -65,14 +48,17 @@ class Scilab2Py(object):
         If specified, the session's MAT files will be created in the
         directory, otherwise a default directory is used.  This can be
         a shared memory (tmpfs) path.
+    as_float : bool, optional
+        If True, convert all values sent to Scilab to floating point type.
     """
 
     def __init__(self, logger=None, timeout=-1, oned_as='row',
-                 temp_dir=None):
+                 temp_dir=None, as_float=True):
         """Start Scilab and create our MAT helpers
         """
         self._oned_as = oned_as
         self._temp_dir = temp_dir
+        self._as_float = as_float
         self.timeout = timeout
         if not logger is None:
             self.logger = logger
@@ -126,7 +112,7 @@ class Scilab2Py(object):
 
         Examples
         --------
-        >>> from oct2py import scilab
+        >>> from scilab import scilab
         >>> out = scilab.run('y=ones(3,3)')
         >>> print(out)
         y =
@@ -175,7 +161,7 @@ class Scilab2Py(object):
 
         Examples
         --------
-        >>> from oct2py import scilab
+        >>> from scilab import scilab
         >>> b = scilab.call('ones', 1, 2)
         >>> print(b)
         [[ 1.  1.]]
@@ -196,9 +182,9 @@ class Scilab2Py(object):
         timeout = kwargs.get('timeout', self.timeout)
 
         # handle references to script names - and paths to them
-        if func.endswith('.sce'):
+        if func.endswith('.sci'):
             if os.path.dirname(func):
-                self.addpath(os.path.dirname(func))
+                self.getd(os.path.dirname(func))
                 func = os.path.basename(func)
             func = func[:-2]
 
@@ -223,7 +209,6 @@ class Scilab2Py(object):
             # run foo
             call_line += '{0}'.format(func)
 
-        pre_call = '\n__oct2py_figures = [];\n'
         post_call = ''
 
         if 'command' in kwargs and not '__ipy_figures' in func:
@@ -231,35 +216,24 @@ class Scilab2Py(object):
                 call_line += '();\n'
             else:
                 call_line += ';\n'
-            post_call += """
-            # Save output of the last execution
-                if exists("ans") == 1
-                  _ = ans;
-                else
-                  _ = "__no_answer";
-                end
-            """
-
-        # do not interfere with scilabmagic logic
-        if not "DefaultFigureCreateFcn" in call_line:
-            post_call += """
-            if exists("__oct2py_figures")
-                for f = __oct2py_figures
-                    try
-                       refresh(f);
-                    end
-                end
-            end"""
+        post_call += """
+        # Save output of the last execution
+            if exists("ans") == 1
+              __ = ans;
+            else
+              __ = "__no_answer";
+            end
+        """
 
         # create the command and execute in Scilab
-        cmd = [load_line, pre_call, call_line, post_call, save_line]
+        cmd = [load_line, call_line, post_call, save_line]
         resp = self._eval(cmd, verbose=verbose, timeout=timeout)
 
         if nout:
             return self._reader.extract_file(argout_list)
-        elif 'command' in kwargs:
+        elif not resp.strip():
             try:
-                ans = self.get('_')
+                ans = self.get('__')
             except (KeyError, Scilab2PyError):
                 return
             # Unfortunately, Scilab doesn't have a "None" object,
@@ -285,7 +259,7 @@ class Scilab2Py(object):
 
         Examples
         --------
-        >>> from oct2py import scilab
+        >>> from scilab import scilab
         >>> y = [1, 2]
         >>> scilab.put('y', y)
         >>> scilab.get('y')
@@ -325,7 +299,7 @@ class Scilab2Py(object):
             If the variable does not exist in the Scilab session.
 
         Examples:
-          >>> from oct2py import scilab
+          >>> from scilab import scilab
           >>> y = [1, 2]
           >>> scilab.put('y', y)
           >>> scilab.get('y')
@@ -339,7 +313,7 @@ class Scilab2Py(object):
             var = [var]
         # make sure the variable(s) exist
         for variable in var:
-            if self._eval('exists "{0}"'.format(variable),
+            if self._eval('exists("{0}")'.format(variable),
                           verbose=False) == 'ans = 0' and not variable == '_':
                 raise Scilab2PyError('{0} does not exist'.format(variable))
         argout_list, save_line = self._reader.setup(len(var), var)
@@ -425,7 +399,7 @@ class Scilab2Py(object):
             kwargs['nout'] = get_nout()
             kwargs['verbose'] = kwargs.get('verbose', False)
             if not 'Built-in Function' in doc:
-                self._eval('clear {0}'.format(name), log=False, verbose=False)
+                self._eval('clear("{0}")'.format(name), log=False, verbose=False)
             kwargs['command'] = True
             return self.call(name, *args, **kwargs)
         # convert to ascii for pydoc
@@ -457,8 +431,8 @@ class Scilab2Py(object):
            If the procedure or object does not exist.
 
         """
-        exist = self._eval('exists "{0}"'.format(name), log=False, verbose=False)
-        if exist.strip() == 'ans = 0':
+        exist = self._eval('exists("{0}")'.format(name), log=False, verbose=False)
+        if '0.' in exist:
             msg = 'Name: "%s" does not exist on the Scilab session path'
             raise Scilab2PyError(msg % name)
         doc = '''No documentation available, use run("help('%s')")''' 
@@ -491,7 +465,8 @@ class Scilab2Py(object):
         """
         self._session = _Session()
         self._reader = MatRead(self._temp_dir)
-        self._writer = MatWrite(self._temp_dir, self._oned_as)
+        self._writer = MatWrite(self._temp_dir, self._oned_as,
+                                self._as_float)
 
     def __del__(self):
         try:
@@ -621,7 +596,7 @@ class _Session(object):
         expr = expr.replace('\n', ';')
 
         output = "disp(char(2));"
-        output += """if execstr("%s;","errcatch") <>0 then;""" % expr
+        output += """if execstr("%s","errcatch") <>0 then;""" % expr
         output += "disp(lasterror()); disp(char(24));"
         output += "else; disp(char(3)); end;\n"
 

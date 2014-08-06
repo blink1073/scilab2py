@@ -82,7 +82,7 @@ class ConversionTest(test.TestCase):
     def test_python_conversions(self):
         """Test roundtrip python type conversions
         """
-        self.sci.addpath(os.path.dirname(__file__))
+        self.sci.getd(os.path.dirname(__file__))
         for out_type, sci_type, in_type in TYPE_CONVERSIONS:
             if out_type == dict:
                 outgoing = dict(x=1)
@@ -111,7 +111,7 @@ class ConversionTest(test.TestCase):
 class IncomingTest(test.TestCase):
     """Test the importing of all Scilab data types, checking their type
 
-    Uses test_datatypes.m to read in a dictionary with all Scilab types
+    Uses test_datatypes.sci to read in a dictionary with all Scilab types
     Tests the types of all the values to make sure they were
         brought in properly.
 
@@ -119,7 +119,7 @@ class IncomingTest(test.TestCase):
     @classmethod
     def setUpClass(cls):
         with Scilab2Py() as sci:
-            sci.addpath(os.path.dirname(__file__))
+            sci.getd(os.path.dirname(__file__))
             cls.data = sci.test_datatypes()
 
     def helper(self, base, keys, types):
@@ -205,15 +205,15 @@ class IncomingTest(test.TestCase):
 class RoundtripTest(test.TestCase):
     """Test roundtrip value and type preservation between Python and Scilab.
 
-    Uses test_datatypes.m to read in a dictionary with all Scilab types
-    uses roundtrip.m to send each of the values out and back,
+    Uses test_datatypes.sci to read in a dictionary with all Scilab types
+    uses roundtrip.sci to send each of the values out and back,
         making sure the value and the type are preserved.
 
     """
     @classmethod
     def setUpClass(cls):
         cls.sci = Scilab2Py()
-        cls.sci.addpath(os.path.dirname(__file__))
+        cls.sci.getd(os.path.dirname(__file__))
         cls.data = cls.sci.test_datatypes()
 
     @classmethod
@@ -244,7 +244,7 @@ class RoundtripTest(test.TestCase):
 
     def helper(self, outgoing, expected_type=None):
         """
-        Use roundtrip.m to make sure the data goes out and back intact.
+        Use roundtrip.sci to make sure the data goes out and back intact.
 
         Parameters
         ==========
@@ -327,14 +327,14 @@ class RoundtripTest(test.TestCase):
 class BuiltinsTest(test.TestCase):
     """Test the exporting of standard Python data types, checking their type.
 
-    Runs roundtrip.m and tests the types of all the values to make sure they
+    Runs roundtrip.sci and tests the types of all the values to make sure they
     were brought in properly.
 
     """
     @classmethod
     def setUpClass(cls):
         cls.sci = Scilab2Py()
-        cls.sci.addpath(os.path.dirname(__file__))
+        cls.sci.getd(os.path.dirname(__file__))
 
     @classmethod
     def tearDownClass(cls):
@@ -342,7 +342,7 @@ class BuiltinsTest(test.TestCase):
 
     def helper(self, outgoing, incoming=None, expected_type=None):
         """
-        Uses roundtrip.m to make sure the data goes out and back intact.
+        Uses roundtrip.sci to make sure the data goes out and back intact.
 
         Parameters
         ==========
@@ -472,7 +472,7 @@ class NumpyTest(test.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sci = Scilab2Py()
-        cls.sci.addpath(os.path.dirname(__file__))
+        cls.sci.getd(os.path.dirname(__file__))
 
     @classmethod
     def tearDownClass(cls):
@@ -599,7 +599,7 @@ class BasicUsageTest(test.TestCase):
     """
     def setUp(self):
         self.sci = Scilab2Py()
-        self.sci.addpath(os.path.dirname(__file__))
+        self.sci.getd(os.path.dirname(__file__))
 
     def test_run(self):
         """Test the run command
@@ -628,9 +628,9 @@ class BasicUsageTest(test.TestCase):
                            [0., 0.25877718]]))
         assert np.allclose(V,  ([[-0.36059668, -0.93272184],
                            [-0.93272184, 0.36059668]]))
-        out = self.sci.call('roundtrip.m', 1)
+        out = self.sci.call('roundtrip.sci', 1)
         self.assertEqual(out, 1)
-        fname = os.path.join(__file__, 'roundtrip.m')
+        fname = os.path.join(__file__, 'roundtrip.sci')
         out = self.sci.call(fname, 1)
         self.assertEqual(out, 1)
         self.assertRaises(Scilab2PyError, self.sci.call, '_spam')
@@ -710,7 +710,7 @@ class MiscTests(test.TestCase):
 
     def setUp(self):
         self.sci = Scilab2Py()
-        self.sci.addpath(os.path.dirname(__file__))
+        self.sci.getd(os.path.dirname(__file__))
 
     def tearDown(self):
         self.sci.close()
@@ -853,12 +853,12 @@ class MiscTests(test.TestCase):
 
     def test_call_path(self):
         with Scilab2Py() as sci:
-            sci.addpath(os.path.dirname(__file__))
-            DATA = sci.call('test_datatypes.m')
+            sci.getd(os.path.dirname(__file__))
+            DATA = sci.call('test_datatypes.sci')
         assert DATA.string.basic == 'spam'
 
         with Scilab2Py() as sci:
-            path = os.path.join(os.path.dirname(__file__), 'test_datatypes.m')
+            path = os.path.join(os.path.dirname(__file__), 'test_datatypes.sci')
             DATA = sci.call(path)
         assert DATA.string.basic == 'spam'
 
