@@ -186,7 +186,9 @@ class Scilab2Py(object):
             if os.path.dirname(func):
                 self.getd(os.path.dirname(func))
                 func = os.path.basename(func)
-            func = func[:-2]
+            else:
+                self.getd('.')
+            func = func[:func.index('.')]
 
         # these three lines will form the commands sent to Scilab
         # load("-v6", "infile", "invar1", ...)
@@ -202,7 +204,7 @@ class Scilab2Py(object):
         if inputs:
             argin_list, load_line = self._writer.create_file(inputs)
             call_line += '{0}({1})'.format(func, ', '.join(argin_list))
-        elif nout:
+        elif nout and not '(' in func:
             # call foo() - no arguments
             call_line += '{0}()'.format(func)
         else:
@@ -216,14 +218,6 @@ class Scilab2Py(object):
                 call_line += '();\n'
             else:
                 call_line += ';\n'
-        post_call += """
-        # Save output of the last execution
-            if exists("ans") == 1
-              __ = ans;
-            else
-              __ = "__no_answer";
-            end
-        """
 
         # create the command and execute in Scilab
         cmd = [load_line, call_line, post_call, save_line]
@@ -231,16 +225,6 @@ class Scilab2Py(object):
 
         if nout:
             return self._reader.extract_file(argout_list)
-        elif not resp.strip():
-            try:
-                ans = self.get('__')
-            except (KeyError, Scilab2PyError):
-                return
-            # Unfortunately, Scilab doesn't have a "None" object,
-            # so we can't return any NaN outputs
-            if isinstance(ans, (str, unicode)) and ans == "__no_answer":
-                ans = None
-            return ans
         else:
             return resp
 
@@ -313,8 +297,8 @@ class Scilab2Py(object):
             var = [var]
         # make sure the variable(s) exist
         for variable in var:
-            if self._eval('exists("{0}")'.format(variable),
-                          verbose=False) == 'ans = 0' and not variable == '_':
+            out = self._eval('exists("{0}")'.format(variable), verbose=False)
+            if '.0' in out and not variable == '__':
                 raise Scilab2PyError('{0} does not exist'.format(variable))
         argout_list, save_line = self._reader.setup(len(var), var)
         self._eval(save_line, verbose=verbose, timeout=timeout)
@@ -432,6 +416,7 @@ class Scilab2Py(object):
 
         """
         exist = self._eval('exists("{0}")'.format(name), log=False, verbose=False)
+        print(exist)
         if '0.' in exist:
             msg = 'Name: "%s" does not exist on the Scilab session path'
             raise Scilab2PyError(msg % name)
@@ -454,6 +439,7 @@ class Scilab2Py(object):
             name = attr[:-1]
         else:
             name = attr
+        print('get doc')
         doc = self._get_doc(name)
         scilab_command = self._make_scilab_command(name, doc)
         #!!! attr, *not* name, because we might have python keyword name!
@@ -596,9 +582,11 @@ class _Session(object):
         expr = expr.replace('\n', ';')
 
         output = "disp(char(2));"
-        output += """if execstr("%s","errcatch") <>0 then;""" % expr
+        output += 'if execstr("%s; if exists(""ans"") then; disp(ans);end;"'
+        output += ',"errcatch") <>0 then;'
         output += "disp(lasterror()); disp(char(24));"
         output += "else; disp(char(3)); end;\n"
+        output = output % expr
 
         if len(cmds) == 5:
             main_line = cmds[2].strip()

@@ -151,11 +151,16 @@ def putval(data, as_float=False):
                     out.append(el.astype(np.float64))
                 else:
                     out.append(el)
+            if as_float:
+                try:
+                    out = np.array(out, dtype=np.float)
+                except TypeError:
+                    pass
             return out
     if isinstance(data, (str, unicode)):
         return data
     if isinstance(data, (csr_matrix, csc_matrix)):
-        return data.astype(np.float64)
+        return data.astype(np.float)
     try:
         data = np.array(data)
     except ValueError as err:  # pragma: no cover

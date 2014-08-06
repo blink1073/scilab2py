@@ -630,7 +630,7 @@ class BasicUsageTest(test.TestCase):
                            [-0.93272184, 0.36059668]]))
         out = self.sci.call('roundtrip.sci', 1)
         self.assertEqual(out, 1)
-        fname = os.path.join(__file__, 'roundtrip.sci')
+        fname = os.path.join(os.path.dirname(__file__), 'roundtrip.sci')
         out = self.sci.call(fname, 1)
         self.assertEqual(out, 1)
         self.assertRaises(Scilab2PyError, self.sci.call, '_spam')
@@ -653,10 +653,7 @@ class BasicUsageTest(test.TestCase):
         """
         tests = [self.sci.zeros, self.sci.ones, self.sci.plot]
         for item in tests:
-            try:
-                self.assertEqual(repr(type(item)), "<type 'function'>")
-            except AssertionError:
-                self.assertEqual(repr(type(item)), "<class 'function'>")
+            self.assertEqual(repr(type(item)), "<type 'function'>")
         self.assertRaises(Scilab2PyError, self.sci.__getattr__, 'aaldkfasd')
         self.assertRaises(Scilab2PyError, self.sci.__getattr__, '_foo')
         self.assertRaises(Scilab2PyError, self.sci.__getattr__, 'foo\W')
