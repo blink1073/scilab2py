@@ -570,7 +570,7 @@ class _Session(object):
             raise Scilab2PyError('Session Closed, try a restart()')
 
         if self._first:
-            self.write('getd(".")')
+            self.write('getd(".")\n')
             self._first = False
 
         # use ascii code 2 for start of text, 3 for end of text, and
@@ -587,14 +587,12 @@ class _Session(object):
         expr = expr.replace("'", "''")
         expr = expr.replace('\n', ';')
 
-        output = "disp(char(2));"
+        output = 'clear("ans");disp(char(2));'
         output += 'if execstr("%s; if exists(""ans"") then; disp(ans);end;"'
         output += ',"errcatch") <>0 then;'
         output += "disp(lasterror()); disp(char(24));"
         output += "else; disp(char(3)); end;\n"
         output = output % expr
-
-        print(expr)
 
         if len(cmds) == 5:
             main_line = cmds[2].strip()

@@ -259,6 +259,7 @@ class ScilabMagics(Magics):
         '''
         # match current working directory
         self._sci.cd(os.getcwd())
+        self._sci.getd('.')
 
         args = parse_argstring(self.scilab, line)
 

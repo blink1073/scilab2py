@@ -755,31 +755,32 @@ class MiscTests(test.TestCase):
 
         self.sci.logger.setLevel(logging.DEBUG)
         self.sci.zeros(1)
-
         # check the output
         lines = hdlr.stream.getvalue().strip().split('\n')
         resp = '\n'.join(lines)
         assert 'zeros(A__)' in resp
-        assert 'ans =  1' in resp
-        assert lines[0].startswith('load')
+        assert '0.' in resp
+        assert lines[0].startswith('loadmatfile')
 
         # now make an object with a desired logger
-        logger = Scilab2Py.get_log('test')
+        logger = scilab2py.get_log('test')
         hdlr = get_handler()
         logger.addHandler(hdlr)
+
         logger.setLevel(logging.INFO)
-        with Scilab2Py(logger=logger) as sci2:
-            # generate some messages (logged and not logged)
-            sci2.ones(1, verbose=True)
-            sci2.logger.setLevel(logging.DEBUG)
-            sci2.zeros(1)
+        sci2 = Scilab2Py(logger=logger)
+        # generate some messages (logged and not logged)
+        sci2.ones(1, verbose=True)
+        sci2.logger.setLevel(logging.DEBUG)
+        sci2.zeros(1)
+        sci2.close()
 
         # check the output
         lines = hdlr.stream.getvalue().strip().split('\n')
         resp = '\n'.join(lines)
         assert 'zeros(A__)' in resp
-        assert 'ans =  1' in resp
-        assert lines[0].startswith('load')
+        assert '0.' in resp
+        assert lines[0].startswith('loadmatfile')
 
     @skipif(True)
     def test_demo(self):
