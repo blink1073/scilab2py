@@ -145,17 +145,14 @@ def putval(data, as_float=False):
             for el in data:
                 if isinstance(el, np.ndarray):
                     cell = np.zeros((1,), dtype=np.object)
+                    if as_float and el.dtype.kind == 'i':
+                        el = el.astype(np.float)
                     cell[0] = el
                     out.append(cell)
                 elif isinstance(el, (csr_matrix, csc_matrix)):
                     out.append(el.astype(np.float64))
                 else:
                     out.append(el)
-            if as_float:
-                try:
-                    out = np.array(out, dtype=np.float)
-                except TypeError:
-                    pass
             return out
     if isinstance(data, (str, unicode)):
         return data
@@ -184,11 +181,8 @@ def putval(data, as_float=False):
         raise Scilab2PyError('Datatype not supported: {0}'.format(data.dtype))
     if data.dtype == 'object' and len(data.shape) > 1:
         data = data.T
-    if as_float:
-        try:
-            data = data.astype(float)
-        except TypeError:
-            pass
+    if as_float and data.dtype.kind == 'i':
+        data = data.astype(np.float)
     return data
 
 

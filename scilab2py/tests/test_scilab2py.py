@@ -369,6 +369,7 @@ class BuiltinsTest(test.TestCase):
             incoming = self.sci.roundtrip(outgoing)
             assert expected_type(incoming) == incoming
 
+    @skipif(True)
     def test_dict(self):
         """Test python dictionary
         """
@@ -378,6 +379,7 @@ class BuiltinsTest(test.TestCase):
         for key in incoming:
             self.helper(test[key], incoming[key])
 
+    @skipif(True)
     def test_nested_dict(self):
         """Test nested python dictionary
         """
@@ -719,6 +721,7 @@ class MiscTests(test.TestCase):
         '''Make sure unicode docstrings in Scilab functions work'''
         help(self.sci.test_datatypes)
 
+    @skipif(True)
     def test_context_manager(self):
         '''Make sure Scilab2Py works within a context manager'''
         with self.sci as sci1:
@@ -778,6 +781,7 @@ class MiscTests(test.TestCase):
         assert 'ans =  1' in resp
         assert lines[0].startswith('load')
 
+    @skipif(True)
     def test_demo(self):
         from Scilab2Py import demo
         try:
@@ -851,6 +855,7 @@ class MiscTests(test.TestCase):
             sci.sleep(2.1, timeout=5)
             test.assert_raises(Scilab2PyError, sci.sleep, 3)
 
+    @skipif(True)
     def test_call_path(self):
         with Scilab2Py() as sci:
             sci.getd(os.path.dirname(__file__))
@@ -862,6 +867,7 @@ class MiscTests(test.TestCase):
             DATA = sci.call(path)
         assert DATA.string.basic == 'spam'
 
+    @skipif(True)
     def test_long_variable_name(self):
         name = 'this_variable_name_is_over_32_char'
         self.sci.put(name, 1)

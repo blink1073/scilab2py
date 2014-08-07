@@ -505,6 +505,7 @@ class _Session(object):
         self.timeout = int(1e6)
         self.read_queue = queue.Queue()
         self.proc = self.start()
+        self._first = True
         self.stdout = sys.stdout
         self.set_timeout()
         atexit.register(self.close)
@@ -567,6 +568,10 @@ class _Session(object):
 
         if not self.proc:
             raise Scilab2PyError('Session Closed, try a restart()')
+
+        if self._first:
+            self.write('getd(".")')
+            self._first = False
 
         # use ascii code 2 for start of text, 3 for end of text, and
         # 24 to signal an error
