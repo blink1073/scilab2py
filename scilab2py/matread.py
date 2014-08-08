@@ -10,7 +10,7 @@ import os
 import numpy as np
 from scipy.io import loadmat
 import scipy
-from .utils import Struct, create_file, Scilab2PyError
+from .utils import Struct, create_file
 
 
 class MatRead(object):
@@ -50,8 +50,9 @@ class MatRead(object):
                 argout_list.append("%s__" % chr(i + 97))
         if not os.path.exists(self.out_file):
             self.out_file = create_file(self.temp_dir)
-        save_line = 'savematfile -v6 {0} {1}'.format(self.out_file,
-                                                  ' '.join(argout_list))
+        save_line = 'savematfile -v6 {0} {1}'
+        save_line = save_line.format(self.out_file,
+                                     ' '.join(argout_list))
         return argout_list, save_line
 
     def remove_file(self):
@@ -60,7 +61,7 @@ class MatRead(object):
         except (OSError, AttributeError):  # pragma: no cover
             pass
 
-    def extract_file(self, argout_list):
+    def extract_file(self, variables=None):
         """
         Extract the variables in argout_list from the M file
 
@@ -76,27 +77,22 @@ class MatRead(object):
 
         """
         data = loadmat(self.out_file)
-        outputs = []
-        for arg in argout_list:
-            try:
-                val = data[arg]
-            except KeyError:
-                if len(arg) > 31 and arg[:31] in data:
-                    val = data[arg[:31]]
-                else:
-                    msg = '%s not found in file %s' % (arg, self.out_file)
-                    raise Scilab2PyError(msg)
-            val = get_data(val)
-            outputs.append(val)
-        if len(outputs) > 1:
-            return tuple(outputs)
-        else:
-            return outputs[0]
+        for key in data.keys():
+            if key.startswith('_'):
+                del data[key]
+            else:
+                data[key] = get_data(data[key])
+        if len(data) == 1:
+            return data.values()[0]
+        elif data:
+            return data
 
 
 def get_data(val):
     '''Extract the data from the incoming value
     '''
+    if not isinstance(val, np.ndarray):
+        return val
     # check for objects
     if "'|O" in str(val.dtype) or "O'" in str(val.dtype):
         data = Struct()
@@ -132,6 +128,9 @@ def get_data(val):
                                 val[row][i] = val[row][i].squeeze()
                             else:
                                 val[row][i] = val[row][i][0]
+            except AttributeError:
+                return val
+
         else:
             val = np.array([get_data(val[i])
                             for i in range(val.size)])

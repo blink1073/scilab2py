@@ -20,10 +20,9 @@ class MatWrite(object):
 
     Strives to preserve both value and type in transit.
     """
-    def __init__(self, temp_dir=None, oned_as='row', as_float=True):
+    def __init__(self, temp_dir=None, oned_as='row'):
         self.oned_as = oned_as
         self.temp_dir = temp_dir
-        self.as_float = as_float
         self.in_file = create_file(self.temp_dir)
 
     def create_file(self, inputs, names=None):
@@ -60,9 +59,9 @@ class MatWrite(object):
             # for structs - recursively add the elements
             try:
                 if isinstance(var, dict):
-                    data[argin_list[-1]] = putvals(var, self.as_float)
+                    data[argin_list[-1]] = putvals(var)
                 else:
-                    data[argin_list[-1]] = putval(var, self.as_float)
+                    data[argin_list[-1]] = putval(var)
             except Scilab2PyError:
                 raise
             ascii_code += 1
@@ -84,7 +83,7 @@ class MatWrite(object):
             pass
 
 
-def putvals(dict_, as_float=False):
+def putvals(dict_):
     """
     Put a nested dict into the MAT file as a struct
 
@@ -102,13 +101,13 @@ def putvals(dict_, as_float=False):
     data = dict()
     for key in dict_.keys():
         if isinstance(dict_[key], dict):
-            data[key] = putvals(dict_[key], as_float)
+            data[key] = putvals(dict_[key])
         else:
-            data[key] = putval(dict_[key], as_float)
+            data[key] = putval(dict_[key])
     return data
 
 
-def putval(data, as_float=False):
+def putval(data):
     """
     Convert data into a state suitable for transfer.
 
@@ -145,7 +144,7 @@ def putval(data, as_float=False):
             for el in data:
                 if isinstance(el, np.ndarray):
                     cell = np.zeros((1,), dtype=np.object)
-                    if as_float and el.dtype.kind == 'i':
+                    if el.dtype.kind in 'iub':
                         el = el.astype(np.float)
                     cell[0] = el
                     out.append(cell)
@@ -153,6 +152,9 @@ def putval(data, as_float=False):
                     out.append(el.astype(np.float64))
                 else:
                     out.append(el)
+            out = np.array(out)
+            if out.dtype.kind in 'ui':
+                out = out.astype(float)
             return out
     if isinstance(data, (str, unicode)):
         return data
@@ -169,10 +171,6 @@ def putval(data, as_float=False):
         raise Scilab2PyError('Datatype not supported: {0}'.format(data.dtype))
     elif 'V' in dstr:
         raise Scilab2PyError('Datatype not supported: {0}'.format(data.dtype))
-    elif dstr == '|b1':
-        data = data.astype(np.int8)
-    elif dstr == '<m8[us]' or dstr == '<M8[us]':
-        data = data.astype(np.uint64)
     elif '|S' in dstr or '<U' in dstr:
         data = data.astype(np.object)
     elif '<c' in dstr and np.alltrue(data.imag == 0):
@@ -181,7 +179,7 @@ def putval(data, as_float=False):
         raise Scilab2PyError('Datatype not supported: {0}'.format(data.dtype))
     if data.dtype == 'object' and len(data.shape) > 1:
         data = data.T
-    if as_float and data.dtype.kind == 'i':
+    if data.dtype.kind in 'iub':
         data = data.astype(np.float)
     return data
 

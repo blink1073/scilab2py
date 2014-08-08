@@ -19,8 +19,8 @@ import time
 
 from .matwrite import MatWrite
 from .matread import MatRead
-from .utils import get_nout, Scilab2PyError, get_log
-from .compat import unicode, PY2, queue
+from .utils import get_nout, Scilab2PyError, get_log, Struct
+from .compat import PY2, queue
 
 
 class Scilab2Py(object):
@@ -48,17 +48,14 @@ class Scilab2Py(object):
         If specified, the session's MAT files will be created in the
         directory, otherwise a default directory is used.  This can be
         a shared memory (tmpfs) path.
-    as_float : bool, optional
-        If True, convert all values sent to Scilab to floating point type.
     """
 
     def __init__(self, logger=None, timeout=-1, oned_as='row',
-                 temp_dir=None, as_float=True):
+                 temp_dir=None):
         """Start Scilab and create our MAT helpers
         """
         self._oned_as = oned_as
         self._temp_dir = temp_dir
-        self._as_float = as_float
         self.timeout = timeout
         if not logger is None:
             self.logger = logger
@@ -180,6 +177,9 @@ class Scilab2Py(object):
         verbose = kwargs.get('verbose', False)
         nout = kwargs.get('nout', get_nout())
         timeout = kwargs.get('timeout', self.timeout)
+        argout_list = ['ans']
+        if '=' in func:
+            nout = 0
 
         # handle references to script names - and paths to them
         if func.endswith('.sci'):
@@ -221,12 +221,14 @@ class Scilab2Py(object):
 
         # create the command and execute in Scilab
         cmd = [load_line, call_line, post_call, save_line]
-        resp = self._eval(cmd, verbose=verbose, timeout=timeout)
-
-        if nout:
-            return self._reader.extract_file(argout_list)
+        data = self._eval(cmd, verbose=verbose, timeout=timeout)
+        if isinstance(data, dict) and not isinstance(data, Struct):
+            data = [data.get(v, None) for v in argout_list]
+        if verbose:
+            self.logger.info(data)
         else:
-            return resp
+            self.logger.debug(data)
+        return data
 
     def put(self, names, var, verbose=False, timeout=-1):
         """
@@ -295,38 +297,12 @@ class Scilab2Py(object):
         """
         if isinstance(var, str):
             var = [var]
-        # make sure the variable(s) exist
-        for variable in var:
-            out = self._eval('exists("{0}")'.format(variable), verbose=False)
-            if '.0' in out and not variable == '__':
-                raise Scilab2PyError('{0} does not exist'.format(variable))
         argout_list, save_line = self._reader.setup(len(var), var)
-        self._eval(save_line, verbose=verbose, timeout=timeout)
-        return self._reader.extract_file(argout_list)
-
-    def lookfor(self, string, verbose=False, timeout=-1):
-        """
-        Call the Scilab "lookfor" command.
-
-        Uses with the "-all" switch to search within help strings.
-
-        Parameters
-        ----------
-        string : str
-            Search string for the lookfor command.
-        verbose : bool, optional
-             Log Scilab output at info level.
-        timeout : float
-            Time to wait for response from Scilab (per character).
-
-        Returns
-        -------
-        out : str
-            Output from the Scilab lookfor command.
-
-        """
-        return self.run('lookfor -all {0}'.format(string), verbose=verbose,
-                        timeout=timeout)
+        data = self._eval(save_line, verbose=verbose, timeout=timeout)
+        if isinstance(data, dict) and not isinstance(data, Struct):
+            return [data.get(v, None) for v in argout_list]
+        else:
+            return data
 
     def _eval(self, cmds, verbose=True, log=True, timeout=-1):
         """
@@ -366,11 +342,15 @@ class Scilab2Py(object):
         if timeout == -1:
             timeout = self.timeout
         try:
-            return self._session.evaluate(cmds, verbose, log, self.logger,
+            resp = self._session.evaluate(cmds, verbose, log, self.logger,
                                           timeout=timeout)
         except KeyboardInterrupt:
             self._session.interrupt()
             return 'Scilab Session Interrupted'
+        if os.path.exists(self._reader.out_file):
+            return self._reader.extract_file()
+        elif resp:
+            return resp
 
     def _make_scilab_command(self, name, doc=None):
         """Create a wrapper to an Scilab procedure or object
@@ -381,9 +361,11 @@ class Scilab2Py(object):
         def scilab_command(*args, **kwargs):
             """ Scilab command """
             kwargs['nout'] = get_nout()
+            if name == 'getd':
+                kwargs['nout'] = 0
             kwargs['verbose'] = kwargs.get('verbose', False)
             """
-            TODO: handle this better
+            TODO: build docs for non-builtins
             if not 'Built-in Function' in doc:
                 self._eval('clear("{0}")'.format(name), log=False, verbose=False)
             """
@@ -418,11 +400,12 @@ class Scilab2Py(object):
            If the procedure or object does not exist.
 
         """
-        exist = self._eval('exists("{0}")'.format(name), log=False, verbose=False)
-        if '0.' in exist:
+        exists = self._eval('exists("{0}")'.format(name), log=False,
+                            verbose=False)
+        if not exists:
             msg = 'Name: "%s" does not exist on the Scilab session path'
             raise Scilab2PyError(msg % name)
-        doc = '''No documentation available, use run("help('%s')")''' 
+        doc = '''No documentation available, use run("help('%s')")'''
         return doc % name
 
     def __getattr__(self, attr):
@@ -450,16 +433,9 @@ class Scilab2Py(object):
     def restart(self):
         """Restart an Scilab session in a clean state
         """
-        self._session = _Session()
         self._reader = MatRead(self._temp_dir)
-        self._writer = MatWrite(self._temp_dir, self._oned_as,
-                                self._as_float)
-
-    def __del__(self):
-        try:
-            self.close()
-        except AttributeError:
-            pass
+        self._writer = MatWrite(self._temp_dir, self._oned_as)
+        self._session = _Session(self._reader.out_file)
 
 
 class _Reader(object):
@@ -501,12 +477,13 @@ class _Session(object):
     """Low-level session Scilab session interaction.
     """
 
-    def __init__(self):
+    def __init__(self, outfile):
         self.timeout = int(1e6)
         self.read_queue = queue.Queue()
         self.proc = self.start()
         self._first = True
         self.stdout = sys.stdout
+        self.outfile = outfile
         self.set_timeout()
         atexit.register(self.close)
 
@@ -573,6 +550,9 @@ class _Session(object):
             self.write('getd(".")\n')
             self._first = False
 
+        if os.path.exists(self.outfile):
+            os.remove(self.outfile)
+
         # use ascii code 2 for start of text, 3 for end of text, and
         # 24 to signal an error
         exprs = []
@@ -588,11 +568,12 @@ class _Session(object):
         expr = expr.replace('\n', ';')
 
         output = 'clear("ans");disp(char(2));'
-        output += 'if execstr("%s; if exists(""ans"") then; disp(ans);end;"'
+        output += 'if execstr("%s; if exists(""ans"") then;'
+        output += 'savematfile -v6 %s ans; end;"'
         output += ',"errcatch") <>0 then;'
         output += "disp(lasterror()); disp(char(24));"
         output += "else; disp(char(3)); end;\n"
-        output = output % expr
+        output = output % (expr, self.outfile)
 
         if len(cmds) == 5:
             main_line = cmds[2].strip()
@@ -630,7 +611,7 @@ class _Session(object):
             if resp or line:
                 resp.append(line)
 
-        return '\n'.join(resp)
+        return '\n'.join(resp).strip()
 
     def interrupt(self):
         self.proc.send_signal(signal.SIGINT)
@@ -703,6 +684,12 @@ class _Session(object):
         except (OSError, AttributeError):  # pragma: no cover
             pass
         self.proc = None
+
+    def __del__(self):
+        try:
+            self.proc.terminate()
+        except (OSError, AttributeError):
+            pass
 
 
 def _test():  # pragma: no cover

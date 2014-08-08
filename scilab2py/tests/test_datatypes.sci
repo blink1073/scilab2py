@@ -1,55 +1,47 @@
 
-function test = test_datatypes()
+function [data] = test_datatypes()
     // Test of returning a structure with multiple
-    // nesting and multiple return types 
+    // nesting and multiple return types
     // Add a UTF char for test: 猫
 
     //////////////////////////////
     // numeric types
     // integers
-    test.num.int.int8 = int8(-2^7);
-    test.num.int.int16 = int16(-2^15);
-    test.num.int.int32 = int32(-2^31);
-    test.num.int.uint8 = uint8(2^8-1);
-    test.num.int.uint16 = uint16(2^16-1);
-    test.num.int.uint32 = uint32(2^32-1);
+    data.num.int.int8 = int8(-2^7);
+    data.num.int.int16 = int16(-2^15);
+    data.num.int.int32 = int32(-2^31);
+    data.num.int.uint8 = uint8(2^8-1);
+    data.num.int.uint16 = uint16(2^16-1);
+    data.num.int.uint32 = uint32(2^32-1);
 
     // floats
-    test.num.double = double(%pi);
-    test.num.complex = complex(3, 1)
-    test.num.complex_matrix = complex(1.2, 1.1) * eye(3, 3);
+    data.num.double = double(%pi);
+    data.num.complex = complex(3, 1)
+    data.num.complex_matrix = complex(1.2, 1.1) * eye(3, 3);
 
     // misc
-    test.num.inf = %inf;
-    test.num.NaN = %nan;
-    test.num.matrix = [1 2; 3 4];
-    test.num.vector = [1 2 3 4];
-    test.num.column_vector = [1;2;3;4];
-    test.num.matrix3d = ones([2 3 4]) * %pi;
-    test.num.matrix5d = ones(1,2,3,4,5) * %pi;
+    data.num.inf = %inf;
+    data.num.NaN = %nan;
+    data.num.matrix = [1 2; 3 4];
+    data.num.vector = [1 2 3 4];
+    data.num.column_vector = [1;2;3;4];
+    data.num.matrix3d = ones([2 3 4]) * %pi;
+    //data.num.matrix5d = ones(1,2,3,4,5) * %pi;
 
 
     //////////////////////////////
     // logical type
-    test.logical = [10 20 30 40 50] > 30;
+    //data.logical = [10 20 30 40 50] > 30;
 
     //////////////////////////////
     // string types
-    test.string.basic = 'spam';
-    test.string.char_array = {'spam', 'eggs'; 'foo ', 'bar '};
-    test.string.cell_array = {'spam', 'eggs'};
-
-    //////////////////////////////
-    // struct array types
-
-    test.struct_array(1).name = 'Sharon';
-    test.struct_array(1).age = 31;
-    test.struct_array(2).name = 'Bill'
-    test.struct_array(2).age = 42
+    data.string.basic = 'spam';
+    //data.string.char_array = {'spam', 'eggs'; 'foo ', 'bar '};
+    //data.string.cell_array = {'spam', 'eggs'};
 
     //////////////////////////////
     // cell array types
-    test.cell.array = {[0.4194 0.3629 -0.0000;
+    data.cell.array = {[0.4194 0.3629 -0.0000;
                         0.0376 0.3306 0.0000;
                         0 0 1.0000],
                        [0.5645 -0.2903 0;
@@ -58,9 +50,9 @@ function test = test_datatypes()
 
     //////////////////////////////
     // mixed struct
-    test.mixed.array = [[1 2]; [3 4]];
-    test.mixed.cell = {'1'};
-    test.mixed.scalar = 1.8;
+    data.mixed.array = [[1 2]; [3 4]];
+    data.mixed.cell = {'1'};
+    data.mixed.scalar = 1.8;
 
 endfunction
 
