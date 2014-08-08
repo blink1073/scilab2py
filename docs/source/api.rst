@@ -2,19 +2,19 @@
 API Reference
 ********************
 
-Oct2Py
+Scilab2Py
 ======
-.. module:: oct2py
-.. autoclass:: Oct2Py
+.. module:: scilab2py
+.. autoclass:: Scilab2Py
    :members:
 
 Utils
 =====
 
-.. autoclass:: Oct2PyError
+.. autoclass:: Scilab2PyError
 
 .. autofunction:: get_log
 
 .. autofunction:: Struct
 
-.. autofunction:: kill_octave
+.. autofunction:: kill_scilab

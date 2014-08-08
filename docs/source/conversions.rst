@@ -2,46 +2,45 @@
 Conversions
 ***********************
 
-Python to Octave Types
+Python to Scliab Types
 ----------------------
 
 Shows the round-trip data types.
 
 =============   ===========    =============
-Python          Octave         Python
+Python          Scilab         Python
 =============   ===========    =============
-int             int32          np.int32
-long            int64          np.int64
+int             double          np.float64
+long            double          np.float64
 float           double         np.float64
 complex         double         np.complex128
-str             char           unicode
-unicode         cell           unicode
-bool            int32          np.int32
+str             string           unicode
+unicode         stiring           unicode
+bool            doubl          np.float64
 None            double         np.float64
-dict            struct         Struct
 =============   ===========    =============
 
-Numpy to Octave Types
+Numpy to Scilab Types
 ---------------------
 
 Note that the errors are types that are not implemented.
 
 =============   ===========    =============
-Numpy           Octave         Numpy
+Numpy           Scilab         Numpy
 =============   ===========    =============
-np.int8         int8           np.int8
-np.int16        int16          np.int16
-np.int32        int32          np.int32
-np.int64        int64          np.int64
-np.uint8        uint8          np.uint8
-np.uint16       uint16         np.uint16
-np.uint32       uint32         np.uint32
-np.uint64       uint64         np.uint64
+np.int8         double           np.float64
+np.int16        double          np.float64
+np.int32        double          np.float64
+np.int64        double          np.float64
+np.uint8        double          np.float64
+np.uint16       double         np.float64
+np.uint32       double         np.float64
+np.uint64       double         np.float64
 np.float16      ERROR          ERROR
 np.float32      double         *np.float64*
 np.float64      double         np.float64
 np.float96      ERROR          ERROR
-np.str          char           np.str
+np.str          string           np.str
 np.double       double         *np.float64*
 np.complex64    double         *np.complex128*
 np.complex128   double         np.complex128
@@ -49,39 +48,35 @@ np.complex192   ERROR          ERROR
 np.object       cell           list
 =============   ===========    =============
 
-Python to Octave Compound Types
+Python to Scilab Compound Types
 -------------------------------
 
 ==================   ===========    ===============
-Python               Octave         Python
+Python               Scilab         Python
 ==================   ===========    ===============
 list of strings      cell (1-d)     list of strings
-list of mixed type   cell           list of mixed type
-nested string list   cell           list of strings
+list of mixed type   ERROR           list of mixed type
+nested string list   ERROR           list of strings
 tuple of strings     cell           list of strings
 nested dict          struct         Struct
-set of int32         int32          np.int32
+set of int32         double          np.float64
 ==================   ===========    ===============
 
-Octave to Python Types
+Scilab to Python Types
 ----------------------
 
-These are the unique values apart from the Python to Octave lists.
+These are the unique values apart from the Python to Scilab lists.
 
 ===============  =================
-Octave           Python
+Scilab           Python
 ===============  =================
 matrix           ndarray
-cell (2-d)       list of lists
+cell (2-d)       ERROR
 cell (scalar)    scalar
-cell array       list of lists
+cell array       ERROR
 struct           Struct
 struct (nested)  Struct (nested)
-struct array*    Struct (of lists)*
-logical          ndarray
+struct array     ERROR
+logical          ERROR
 ===============  =================
-
-::
-  
-  * One-way trip (cannot be sent back to Octave intact)
 

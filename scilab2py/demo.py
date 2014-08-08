@@ -65,7 +65,7 @@ def demo(delay=2, interactive=True):
     if not PY2:
         script = script.replace('raw_input', 'input')
 
-    print('oct2py demo')
+    print('Scilab2Py demo')
     print('*' * 20)
     for line in script.strip().split('\n'):
         line = line.strip()

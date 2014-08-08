@@ -1,7 +1,7 @@
 
 .. include:: ../README.rst
    :end-before:  Installation
-   
+
 .. toctree::
    :hidden:
    :maxdepth: 1
@@ -16,27 +16,27 @@
 `API Reference <source/api.html>`_
 ------------------------------------------------
 
-Documentation for the functions included in Oct2Py.
+Documentation for the functions included in Scilab2Py.
 
 `Installation <source/installation.html>`_
 ------------------------------------------------
 
-How to install Oct2Py.
+How to install Scilab2Py.
 
 
 `Examples <source/examples.html>`_
 ------------------------------------------------
 
 Introductory examples.
-       
-       
+
+
 `Type Conversions <source/conversions.html>`_
 ------------------------------------------------
-   
-Oct2Py data type conversions.
+
+Scilab2Py data type conversions.
 
 
 `Information <source/info.html>`_
 -----------------------------------------
 
-Other information about Oct2Py.
+Other information about Scilab2Py.

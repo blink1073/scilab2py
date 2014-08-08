@@ -3,31 +3,29 @@ Installation
 
 Library Installation
 --------------------
-You must have GNU Octave installed and in your PATH (see instructions below).
-Additionally, you must have the Numpy and Scipy libraries installed.  On Windows, you can get the install files here_. 
+You must have Scilab_. installed and in your PATH (see instructions below).
+Additionally, you must have the Numpy and Scipy libraries installed.  On Windows, you can get the install files here_.
 
 The best way to install this library is by using pip_::
 
-   pip install oct2py
+   pip install scilab2py
 
 
-
+.. _Scilab: http://www.scilab.org/download/
 .. _here: http://scipy.org/Download
 .. _pip: http://www.pip-installer.org/en/latest/installing.html
 
 
-GNU Octave Installation
------------------------
-- On Linux platforms, try your package manager, or follow the
-  instructions from Octave_.
+Scilab Path Installation
+-----------------------------
 
-.. _Octave:  http://www.gnu.org/software/octave/doc/interpreter/Installation.html
+The goal is to be able to call Scilab from the command prompt.
 
-- On Windows, download the latest MinGW or .NET version_.
-  The MinGW version requires the 7zip_ program for installation.
-  Finally, to add Octave to your path. You can do so from the Environmental Variables dialog for your version of Windows, or set from the command prompt::
+On *nix systems, open a shell and type ``scilab --nw``.
+If that does not work, add the path to your Scilab executable in your PATH in your ``.profile`` file.
 
-      setx PATH "%PATH%;<path-to-octave-bin-dir>
+On Windows, open a ``cmd`` prompt and type ``Scilex``.
+If that does not work, you need to find your ``scilab-x.x.x\bin`` directory (probably in ``C:/Program Files``) and add that to your path.
+You can do so from the Environmental Variables dialog for your version of Windows, or set from the command prompt::
 
-.. _version: http://sourceforge.net/projects/octave/files/Octave%20Windows%20binaries/
-.. _7zip: http://portableapps.com/apps/utilities/7-zip_portable
+      setx PATH "%PATH%;<path-to-scilab-bin-dir>"
