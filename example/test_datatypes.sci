@@ -26,16 +26,9 @@ function [data] = test_datatypes()
     data.num.matrix3d = ones([2 3 4]) * %pi;
     //data.num.matrix5d = ones(1,2,3,4,5) * %pi;
 
-
-    //////////////////////////////
-    // logical type
-    //data.logical = [10 20 30 40 50] > 30;
-
     //////////////////////////////
     // string types
     data.string.basic = 'spam';
-    //data.string.char_array = {'spam', 'eggs'; 'foo ', 'bar '};
-    //data.string.cell_array = {'spam', 'eggs'};
 
     //////////////////////////////
     // cell array types

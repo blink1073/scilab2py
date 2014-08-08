@@ -17,7 +17,7 @@ MAT files.  Usage is as simple as:
 
 .. code-block:: python
 
-    >>> sci = scilab2py.Scilab2Py() 
+    >>> sci = scilab2py.Scilab2Py()
     >>> x = sci.zeros(3,3)
     >>> print x, x.dtype
     [[ 0.  0.  0.]
@@ -29,7 +29,7 @@ MAT files.  Usage is as simple as:
 Features
 --------
 
-- Supports all Scilab datatypes and most Python datatypes and Numpy dtypes.
+- Supports most Scilab datatypes and most Python datatypes and Numpy dtypes.
 - Provides ScilabMagic_ for IPython, including inline plotting in notebooks.
 - Supports cell arrays and structs with arbitrary nesting.
 - Supports sparse matrices.
@@ -47,9 +47,8 @@ Features
 
 Installation
 ------------
-You must have Scilab installed and in your PATH. 
+You must have Scilab_ installed and in your PATH.
 You must have the Numpy and Scipy libraries installed.
-On Linux, it should be available from your package manager.  
 
 To install Scilab2Py, simply:
 
@@ -66,5 +65,5 @@ Documentation is available online_.
 For version information, see the Revision History_.
 
 .. _online: http://blink1073.github.io/scilab2py/docs/
-
+.. _Scilab: http://www.scilab.org/download/
 .. _History: https://github.com/blink1073/scilab2py/blob/master/HISTORY.rst
