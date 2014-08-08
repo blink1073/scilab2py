@@ -1,8 +1,8 @@
-""" Get a sample of all datatypes from Octave and print the result
+""" Get a sample of all datatypes from Scilab and print the result
 """
-from oct2py import octave
+from scilab2py import scilab
 
 if __name__ == '__main__':
-    out = octave.test_datatypes()
+    out = scilab.test_datatypes()
     import pprint
     pprint.pprint(out)

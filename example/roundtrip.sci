@@ -1,14 +1,14 @@
 
-function x, class = roundtrip(y)
+function [x, dtype] = roundtrip(y)
 
-  % returns the variable it was given, and optionally the class
+  // returns the variable it was given, and optionally the datatype
 
-  x = y
+  x = y;
 
-  if nargout == 2
+  if argn(1) == 2
 
-	 class = class(x)
+	 dtype = typeof(x);
 
   end
 
-end
+endfunction
