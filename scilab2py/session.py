@@ -17,6 +17,8 @@ import sys
 import threading
 import time
 
+import numpy as np
+
 from .matwrite import MatWrite
 from .matread import MatRead
 from .utils import get_nout, Scilab2PyError, get_log, Struct
@@ -348,7 +350,10 @@ class Scilab2Py(object):
             self._session.interrupt()
             return 'Scilab Session Interrupted'
         if os.path.exists(self._reader.out_file):
-            return self._reader.extract_file()
+            try:
+                return self._reader.extract_file()
+            except (TypeError, IOError):
+                pass
         elif resp:
             return resp
 
@@ -402,7 +407,7 @@ class Scilab2Py(object):
         """
         exists = self._eval('exists("{0}")'.format(name), log=False,
                             verbose=False)
-        if not exists:
+        if not np.any(exists) and not name == 'help':
             msg = 'Name: "%s" does not exist on the Scilab session path'
             raise Scilab2PyError(msg % name)
         doc = '''No documentation available, use run("help('%s')")'''
@@ -551,7 +556,10 @@ class _Session(object):
             self._first = False
 
         if os.path.exists(self.outfile):
-            os.remove(self.outfile)
+            try:
+                os.remove(self.outfile)
+            except OSError:
+                pass
 
         # use ascii code 2 for start of text, 3 for end of text, and
         # 24 to signal an error
@@ -569,11 +577,12 @@ class _Session(object):
 
         output = 'clear("ans");disp(char(2));'
         output += 'if execstr("%s; if exists(""ans"") then;'
-        output += 'savematfile -v6 %s ans; end;"'
+        output += 'try; savematfile -v6 %s ans; catch;'
+        output += 'savematfile -v6 %s string(ans); end; end;"'
         output += ',"errcatch") <>0 then;'
         output += "disp(lasterror()); disp(char(24));"
         output += "else; disp(char(3)); end;\n"
-        output = output % (expr, self.outfile)
+        output = output % (expr, self.outfile, self.outfile)
 
         if len(cmds) == 5:
             main_line = cmds[2].strip()

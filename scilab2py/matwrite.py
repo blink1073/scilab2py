@@ -149,7 +149,7 @@ def putval(data):
                     cell[0] = el
                     out.append(cell)
                 elif isinstance(el, (csr_matrix, csc_matrix)):
-                    out.append(el.astype(np.float64))
+                    raise TypeError('Sparse matrices are not supported')
                 else:
                     out.append(el)
             out = np.array(out)
@@ -159,7 +159,7 @@ def putval(data):
     if isinstance(data, (str, unicode)):
         return data
     if isinstance(data, (csr_matrix, csc_matrix)):
-        return data.astype(np.float)
+        raise TypeError('Sparse matrices are not supported')
     try:
         data = np.array(data)
     except ValueError as err:  # pragma: no cover

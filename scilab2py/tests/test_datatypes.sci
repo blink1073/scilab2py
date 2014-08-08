@@ -20,8 +20,6 @@ function [data] = test_datatypes()
     data.num.complex_matrix = complex(1.2, 1.1) * eye(3, 3);
 
     // misc
-    data.num.inf = %inf;
-    data.num.NaN = %nan;
     data.num.matrix = [1 2; 3 4];
     data.num.vector = [1 2 3 4];
     data.num.column_vector = [1;2;3;4];

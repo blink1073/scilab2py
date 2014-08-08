@@ -130,17 +130,17 @@ class IncomingTest(test.TestCase):
     def test_int(self):
         """Test incoming integer types
         """
-        keys = ['int8', 'int16', 'int32', 'int64',
-                'uint8', 'uint16', 'uint32', 'uint64']
-        types = [np.int8, np.int16, np.int32, np.int64,
-                 np.uint8, np.uint16, np.uint32, np.uint64]
+        keys = ['int8', 'int16', 'int32',
+                'uint8', 'uint16', 'uint32']
+        types = [np.int8, np.int16, np.int32,
+                 np.uint8, np.uint16, np.uint32]
         self.helper(self.data.num.int, keys, types)
 
     def test_floats(self):
         """Test incoming float types
         """
-        keys = ['float32', 'float64', 'complex', 'complex_matrix']
-        types = [np.float64, np.float64, np.complex128, np.ndarray]
+        keys = ['double', 'complex', 'complex_matrix']
+        types = [np.float64, np.complex128, np.ndarray]
         self.helper(self.data.num, keys, types)
         self.assertEqual(self.data.num.complex_matrix.dtype,
                          np.dtype('complex128'))
@@ -148,41 +148,23 @@ class IncomingTest(test.TestCase):
     def test_misc_num(self):
         """Test incoming misc numeric types
         """
-        keys = ['inf', 'NaN', 'matrix', 'vector', 'column_vector', 'matrix3d',
-                'matrix5d']
-        types = [np.float64, np.float64, np.ndarray, np.ndarray, np.ndarray,
-                 np.ndarray, np.ndarray]
+        keys = ['matrix', 'vector', 'column_vector', 'matrix3d']
+        types = [np.ndarray, np.ndarray, np.ndarray,
+                      np.ndarray]
         self.helper(self.data.num, keys, types)
-
-    def test_logical(self):
-        """Test incoming logical type
-        """
-        self.assertEqual(type(self.data.logical), np.ndarray)
 
     def test_string(self):
         """Test incoming string types
         """
-        keys = ['basic', 'char_array', 'cell_array']
-        types = [unicode, list, list]
+        keys = ['basic']
+        types = [unicode]
         self.helper(self.data.string, keys, types)
-
-    def test_struct_array(self):
-        ''' Test incoming struct array types '''
-        keys = ['name', 'age']
-        types = [list, list]
-        self.helper(self.data.struct_array, keys, types)
-
-    def test_cell_array(self):
-        ''' Test incoming cell array types '''
-        keys = ['vector', 'matrix']
-        types = [list, list]
-        self.helper(self.data.cell, keys, types)
 
     def test_mixed_struct(self):
         '''Test mixed struct type
         '''
         keys = ['array', 'cell', 'scalar']
-        types = [list, list, float]
+        types = [list, str, float]
         self.helper(self.data.mixed, keys, types)
 
 
@@ -249,45 +231,32 @@ class RoundtripTest(test.TestCase):
     def test_int(self):
         """Test roundtrip value and type preservation for integer types
         """
-        for key in ['int8', 'int16', 'int32', 'int64',
-                    'uint8', 'uint16', 'uint32', 'uint64']:
-            self.helper(self.data.num.int[key])
+        for key in ['int8', 'int16', 'int32',
+                    'uint8', 'uint16', 'uint32']:
+            self.helper(self.data.num.int[key], np.float64)
 
     def test_float(self):
         """Test roundtrip value and type preservation for float types
         """
-        for key in ['float64', 'complex', 'complex_matrix']:
+        for key in ['double', 'complex', 'complex_matrix']:
             self.helper(self.data.num[key])
-        self.helper(self.data.num['float32'], np.float64)
 
     def test_misc_num(self):
         """Test roundtrip value and type preservation for misc numeric types
         """
-        for key in ['inf', 'NaN', 'matrix', 'vector', 'column_vector',
-                    'matrix3d', 'matrix5d']:
+        for key in ['matrix', 'vector', 'column_vector',  'matrix3d']:
             self.helper(self.data.num[key])
-
-    def test_logical(self):
-        """Test roundtrip value and type preservation for logical type
-        """
-        self.helper(self.data.logical)
 
     def test_string(self):
         """Test roundtrip value and type preservation for string types
         """
-        for key in ['basic', 'cell_array']:
+        for key in ['basic']:
             self.helper(self.data.string[key])
-
-    def test_struct_array(self):
-        """Test roundtrip value and type preservation for struct array types
-        """
-        self.helper(self.data.struct_array['name'])
-        self.helper(self.data.struct_array['age'], np.ndarray)
 
     def test_cell_array(self):
         """Test roundtrip value and type preservation for cell array types
         """
-        for key in ['vector', 'matrix', 'array']:
+        for key in ['array']:
             self.helper(self.data.cell[key])
         #self.helper(DATA.cell['array'], np.ndarray)
 
@@ -296,16 +265,18 @@ class RoundtripTest(test.TestCase):
         '''
         self.sci.run('x = test_datatypes()')
         self.sci.put('y', self.data)
-        try:
-            self.sci.isequaln
-            func = 'isequaln'
-        except Scilab2PyError:
-            func = 'isequalwithequalnans'
+
         for key in self.data.keys():
-            if key != 'struct_array':
-                cmd = '{0}(x.{1},y.{1})'.format(func, key)
-                ret = self.sci.run(cmd)
-                assert ret == 'ans =  1'
+            if isinstance(self.data[key], dict):
+                for subkey in self.data[key].keys():
+                    if subkey == 'int':
+                        continue
+                    cmd = 'isequal(x.{0}.{1},y.{0}.{1})'.format(key, subkey)
+                    assert self.sci.run(cmd) == 'T'
+                continue
+            else:
+                cmd = 'isequal(x.{0},y.{0})'.format(key)
+                assert self.sci.run(cmd) == 'T'
 
 
 class BuiltinsTest(test.TestCase):
@@ -428,7 +399,7 @@ class NumpyTest(test.TestCase):
     """Check value and type preservation of Numpy arrays
     """
     codes = np.typecodes['All']
-    blacklist_codes = 'V'
+    blacklist_codes = ['V', 'M', 'f', 'F']
     blacklist_names = ['float128', 'float96', 'complex192', 'complex256']
 
     @classmethod
@@ -444,18 +415,20 @@ class NumpyTest(test.TestCase):
         """Send scalar numpy types and make sure we get the same number back.
         """
         for typecode in self.codes:
+            if typecode in self.blacklist_codes:
+                continue
             outgoing = (np.random.randint(-255, 255) + np.random.rand(1))
             try:
                 outgoing = outgoing.astype(typecode)
             except TypeError:
                 continue
-            if (typecode in self.blacklist_codes or
-                    outgoing.dtype.name in self.blacklist_names):
-                self.assertRaises(Scilab2PyError, self.sci.roundtrip, outgoing)
+            if outgoing.dtype.name in self.blacklist_names:
                 continue
             incoming = self.sci.roundtrip(outgoing)
             if outgoing.dtype.str in ['<M8[us]', '<m8[us]']:
                 outgoing = outgoing.astype(np.uint64)
+            if outgoing.dtype.kind in 'bui':
+                outgoing = outgoing.astype(np.float)
             try:
                 assert np.allclose(incoming, outgoing)
             except (ValueError, TypeError, NotImplementedError,
@@ -467,63 +440,45 @@ class NumpyTest(test.TestCase):
         """Send ndarrays and make sure we get the same array back
         """
         for typecode in self.codes:
-            for ndims in [2, 3, 4]:
-                size = [np.random.randint(1, 10) for i in range(ndims)]
-                outgoing = (np.random.randint(-255, 255, tuple(size)))
+            ndims = 2
+            size = [np.random.randint(1, 10) for i in range(ndims)]
+            outgoing = (np.random.randint(-255, 255, tuple(size)))
+            try:
+                outgoing += np.random.rand(*size).astype(outgoing.dtype,
+                                                         casting='unsafe')
+            except TypeError:  # pragma: no cover
+                outgoing += np.random.rand(*size).astype(outgoing.dtype)
+            if typecode in ['U', 'S', 'O']:
+                continue
+            else:
                 try:
-                    outgoing += np.random.rand(*size).astype(outgoing.dtype,
-                                                             casting='unsafe')
-                except TypeError:  # pragma: no cover
-                    outgoing += np.random.rand(*size).astype(outgoing.dtype)
-                if typecode in ['U', 'S']:
-                    outgoing = [[['spam', 'eggs'], ['spam', 'eggs']],
-                                [['spam', 'eggs'], ['spam', 'eggs']]]
-                    outgoing = np.array(outgoing).astype(typecode)
-                else:
-                    try:
-                        outgoing = outgoing.astype(typecode)
-                    except TypeError:
-                        continue
-                if (typecode in self.blacklist_codes or
-                        outgoing.dtype.name in self.blacklist_names):
-                    self.assertRaises(Scilab2PyError, self.sci.roundtrip, outgoing)
+                    outgoing = outgoing.astype(typecode)
+                except TypeError:
                     continue
-                incoming = self.sci.roundtrip(outgoing)
-                incoming = np.array(incoming)
-                if outgoing.size == 1:
-                    outgoing = outgoing.squeeze()
-                if len(outgoing.shape) > 2 and 1 in outgoing.shape:
-                    incoming = incoming.squeeze()
-                    outgoing = outgoing.squeeze()
-                elif incoming.size == 1:
-                    incoming = incoming.squeeze()
-                assert incoming.shape == outgoing.shape
-                if outgoing.dtype.str in ['<M8[us]', '<m8[us]']:
-                    outgoing = outgoing.astype(np.uint64)
-                try:
-                    assert np.allclose(incoming, outgoing)
-                except (AssertionError, ValueError, TypeError,
-                        NotImplementedError):
-                    if 'c' in incoming.dtype.str:
-                        incoming = np.abs(incoming)
-                        outgoing = np.abs(outgoing)
-                    assert np.alltrue(np.array(incoming).astype(typecode) ==
-                                      outgoing)
-
-    def test_sparse(self):
-        '''Test roundtrip sparse matrices
-        '''
-        from scipy.sparse import csr_matrix, identity
-        rand = np.random.rand(100, 100)
-        rand = csr_matrix(rand)
-        iden = identity(1000)
-        for item in [rand, iden]:
-            incoming, type_ = self.sci.roundtrip(item)
-            assert item.shape == incoming.shape
-            assert item.nnz == incoming.nnz
-            assert np.allclose(item.todense(), incoming.todense())
-            assert item.dtype == incoming.dtype
-            assert (type_ == 'double' or type_ == 'cell')
+            if (typecode in self.blacklist_codes or
+                    outgoing.dtype.name in self.blacklist_names):
+                continue
+            incoming = self.sci.roundtrip(outgoing)
+            incoming = np.array(incoming)
+            if outgoing.size == 1:
+                outgoing = outgoing.squeeze()
+            if len(outgoing.shape) > 2 and 1 in outgoing.shape:
+                incoming = incoming.squeeze()
+                outgoing = outgoing.squeeze()
+            elif incoming.size == 1:
+                incoming = incoming.squeeze()
+            assert incoming.shape == outgoing.shape
+            if outgoing.dtype.str in ['<M8[us]', '<m8[us]']:
+                outgoing = outgoing.astype(np.uint64)
+            try:
+                assert np.allclose(incoming, outgoing)
+            except (AssertionError, ValueError, TypeError,
+                    NotImplementedError):
+                if 'c' in incoming.dtype.str:
+                    incoming = np.abs(incoming)
+                    outgoing = np.abs(outgoing)
+                assert np.alltrue(np.array(incoming).astype(typecode) ==
+                                  outgoing)
 
     def test_empty(self):
         '''Test roundtrip empty matrices
@@ -533,7 +488,7 @@ class NumpyTest(test.TestCase):
         assert empty.squeeze().shape == incoming.squeeze().shape
         assert np.allclose(empty[np.isfinite(empty)],
                            incoming[np.isfinite(incoming)])
-        assert type_ == 'double'
+        assert type_ == 'constant'
 
     def test_mat(self):
         '''Verify support for matrix type
@@ -543,7 +498,7 @@ class NumpyTest(test.TestCase):
         incoming, type_ = self.sci.roundtrip(test)
         assert np.allclose(test, incoming)
         assert test.dtype == incoming.dtype
-        assert type_ == 'double'
+        assert type_ == 'constant'
 
     def test_masked(self):
         '''Test support for masked arrays
@@ -553,7 +508,21 @@ class NumpyTest(test.TestCase):
         incoming, type_ = self.sci.roundtrip(test)
         assert np.allclose(test, incoming)
         assert test.dtype == incoming.dtype
-        assert type_ == 'double'
+        assert type_ == 'constant'
+
+    def test_infinite(self):
+        """Test support for inf and nan types.
+        """
+        x = np.NaN
+        y = np.inf
+        self.sci.put('x', x)
+        self.sci.put('y', y)
+        assert np.isnan(self.sci.get('x'))
+        assert np.isinf(self.sci.get('y'))
+        self.sci.run('a = %nan')
+        self.sci.run('b= %inf')
+        assert np.isnan(self.sci.get('a'))
+        assert np.isinf(self.sci.get('b'))
 
 
 class BasicUsageTest(test.TestCase):
@@ -684,15 +653,6 @@ class MiscTests(test.TestCase):
             ones = sci2.ones(1)
         assert ones == np.ones(1)
 
-    def test_singleton_sparses(self):
-        '''Make sure a singleton sparse matrix works'''
-        import scipy.sparse
-        data = scipy.sparse.csc.csc_matrix(1)
-        self.sci.put('x', data)
-        assert np.allclose(data.toarray(), self.sci.get('x').toarray())
-        self.sci.put('y', [data])
-        assert np.allclose(data.toarray(), self.sci.get('y').toarray())
-
     def test_logging(self):
         # create a stringio and a handler to log to it
         def get_handler():
@@ -735,26 +695,25 @@ class MiscTests(test.TestCase):
         assert '0.' in resp
         assert lines[0].startswith('loadmatfile')
 
-    @skipif(True)
     def test_demo(self):
-        from Scilab2Py import demo
+        from scilab2py import demo
         try:
             demo.demo(0.01, interactive=False)
         except AttributeError:
             demo(0.01, interactive=False)
 
     def test_remove_files(self):
-        from Scilab2Py.utils import _remove_temp_files
+        from scilab2py.utils import _remove_temp_files
         _remove_temp_files()
 
     def test_threads(self):
-        from Scilab2Py import thread_test
+        from scilab2py import thread_test
         thread_test()
 
     def test_plot(self):
-        n = self.sci.figure()
+        self.sci.figure()
         self.sci.plot([1, 2, 3])
-        self.sci.close_(n)
+        self.sci.close_(0)
 
     def test_narg_out(self):
         s = self.sci.svd(np.array([[1, 2], [1, 3]]))
@@ -775,22 +734,8 @@ class MiscTests(test.TestCase):
             test.assert_raises(Scilab2PyError, sci.call, 'ones')
 
     def test_pause(self):
-        self.sci._eval('a=1')
-
-        stdin = sys.stdin
-        stdout = sys.stdout
-        output = StringIO()
-        sys.stdin = StringIO('a\nexit')
-        self.sci._session.stdout = output
-        self.sci.pause(timeout=3)
-
-        sys.stdin.flush()
-        sys.stdin = stdin
-        self.sci._session.stdout = stdout
-
-        out = output.getvalue()
-        assert 'Entering Scilab Debug Prompt...' in out
-        assert 'a =  1' in out
+        self.assertRaises(Scilab2PyError,
+                                      lambda:  self.sci.xpause(10e6, timeout=3))
 
     def test_func_without_docstring(self):
         out = self.sci.test_nodocstring(5)
@@ -805,8 +750,8 @@ class MiscTests(test.TestCase):
 
     def test_timeout(self):
         with Scilab2Py(timeout=2) as sci:
-            sci.sleep(2.1, timeout=5)
-            test.assert_raises(Scilab2PyError, sci.sleep, 3)
+            sci.xpause(2.1e6, timeout=5)
+            test.assert_raises(Scilab2PyError, sci.xpause, 4e6)
 
     def test_call_path(self):
         with Scilab2Py() as sci:
