@@ -17,12 +17,10 @@ import sys
 import threading
 import time
 
-import numpy as np
-
 from scilab2py.matwrite import MatWrite
 from scilab2py.matread import MatRead
 from scilab2py.utils import get_nout, Scilab2PyError, get_log, Struct
-from scilab2py.compat import PY2, queue
+from scilab2py.compat import PY2, queue, unicode
 
 
 class Scilab2Py(object):
@@ -217,11 +215,10 @@ class Scilab2Py(object):
 
         post_call = ''
 
-        if 'command' in kwargs and not '__ipy_figures' in func:
-            if not call_line.endswith(')') and nout:
-                call_line += '();\n'
-            else:
-                call_line += ';\n'
+        if not call_line.endswith(')') and nout:
+            call_line += '()'
+        else:
+            call_line += ';'
 
         # create the command and execute in Scilab
         cmd = [load_line, call_line, post_call, save_line]
@@ -261,7 +258,7 @@ class Scilab2Py(object):
         [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
         """
-        if isinstance(names, str):
+        if isinstance(names, (str, unicode)):
             var = [var]
             names = [names]
         for name in names:
@@ -301,7 +298,7 @@ class Scilab2Py(object):
           [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
         """
-        if isinstance(var, str):
+        if isinstance(var, (str, unicode)):
             var = [var]
         argout_list, save_line = self._reader.setup(len(var), var)
         data = self._eval(save_line, verbose=verbose, timeout=timeout)
@@ -339,25 +336,47 @@ class Scilab2Py(object):
         """
         if not self._session:
             raise Scilab2PyError('No Scilab Session')
-        if isinstance(cmds, str):
+
+        if isinstance(cmds, (str, unicode)):
             cmds = [cmds]
+
         if verbose and log:
             [self.logger.info(line) for line in cmds]
+
         elif log:
             [self.logger.debug(line) for line in cmds]
+
         if timeout == -1:
             timeout = self.timeout
+
+        post_call = ''
+        for cmd in cmds:
+
+            match = re.match('([a-z][a-zA-Z0-9_]*) *=', cmd)
+            if match and not cmd.strip().endswith(';'):
+                post_call = 'ans = %s' % match.groups()[0]
+                break
+
+            match = re.match('([a-z][a-zA-Z0-9_]*)\Z', cmd.strip())
+            if match and not cmd.strip().endswith(';'):
+                post_call = 'ans = %s' % match.groups()[0]
+                break
+
+        cmds.append(post_call)
+
         try:
             resp = self._session.evaluate(cmds, verbose, log, self.logger,
                                           timeout=timeout)
         except KeyboardInterrupt:
             self._session.interrupt()
             return 'Scilab Session Interrupted'
+
         if os.path.exists(self._reader.out_file):
             try:
                 return self._reader.extract_file()
             except (TypeError, IOError):
                 pass
+
         if resp:
             return resp
 
@@ -380,13 +399,16 @@ class Scilab2Py(object):
             """
             kwargs['command'] = True
             return self.call(name, *args, **kwargs)
+
         # convert to ascii for pydoc
         try:
             doc = doc.encode('ascii', 'replace').decode('ascii')
         except UnicodeDecodeError:
             pass
+
         scilab_command.__doc__ = "\n" + doc
         scilab_command.__name__ = name
+
         return scilab_command
 
     def _get_doc(self, name):
@@ -587,11 +609,17 @@ class _Session(object):
             disp(char(24))
         else
             if exists("ans") then
-                try
-                    savematfile -v6 %s ans;
-                catch
-                    disp(ans);
+                last_ans = ans;
+                if type(last_ans) == 4 then
+                    last_ans = double(last_ans)
                 end
+                if or(type(last_ans) == [1,2,3,5,6,7,8,10]) then
+                    savematfile -v6 %s last_ans;
+                    _ = last_ans;
+                elseif type(last_ans)
+                    disp(last_ans);
+                end
+                clear("last_ans")
             end
             disp(char(3))
         end""" % (expr, self.outfile)
