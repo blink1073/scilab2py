@@ -1,1 +1,1 @@
-from .octavemagic import load_ipython_extension
+from .scilabmagic import load_ipython_extension

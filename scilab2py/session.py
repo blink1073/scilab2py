@@ -552,7 +552,7 @@ class _Session(object):
             raise Scilab2PyError('Session Closed, try a restart()')
 
         if self._first:
-            self.write('getd(".")\n')
+            self.write('try;getd(".");catch;end\n')
             self._first = False
 
         if os.path.exists(self.outfile):

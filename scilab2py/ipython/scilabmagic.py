@@ -32,23 +32,6 @@ To enable the magics below, execute ``%load_ext scilabmagic``.
 
 """
 
-"""
-//set the default size and location of graphics windows
-h = gdf()
-h.figure_position = [0, 0]
-h.figure_size = [0, 0]
-h.auto_resize = 'off'
-
-//save and close all opened graphic windows 
-function handle_all_fig() 
-   ids_array=winsid(); 
-   for i=1:length(ids_array) 
-      id=ids_array(i); 
-      xs2bmp(id, msprintf('%d.bmp', id))
-      close(get_figure_handle(id)); 
-   end 
-endfunction 
-"""
 
 #-----------------------------------------------------------------------------
 #  Copyright (C) 2012 The IPython Development Team
@@ -101,36 +84,11 @@ class ScilabMagics(Magics):
         super(ScilabMagics, self).__init__(shell)
         self._sci = scilab2py.Scilab2Py()
         self._plot_format = 'png'
+        self._first_call = True
 
         # Allow publish_display_data to be overridden for
         # testing purposes.
         self._publish_display_data = publish_display_data
-
-    def _fix_gnuplot_svg_size(self, image, size=None):
-        """
-        GnuPlot SVGs do not have height/width attributes.  Set
-        these to be the same as the viewBox, so that the browser
-        scales the image correctly.
-
-        Parameters
-        ----------
-        image : str
-            SVG data.
-        size : tuple of int
-            Image width, height.
-
-        """
-        (svg,) = minidom.parseString(image).getElementsByTagName('svg')
-        viewbox = svg.getAttribute('viewBox').split(' ')
-
-        if size is not None:
-            width, height = size
-        else:
-            width, height = viewbox[2:]
-
-        svg.setAttribute('width', '%dpx' % width)
-        svg.setAttribute('height', '%dpx' % height)
-        return svg.toxml()
 
     @skip_doctest
     @line_magic
@@ -199,10 +157,6 @@ class ScilabMagics(Magics):
              'whitespace.'
         )
     @argument(
-        '-s', '--size', action='store',
-        help='Pixel size of plots, "width,height". Default is "-s 400,250".'
-        )
-    @argument(
         '-f', '--format', action='store',
         help='Plot format (png, svg or jpg).'
         )
@@ -251,15 +205,18 @@ class ScilabMagics(Magics):
             In [17]: W
             Out[17]: array([  5.,  20.,  25.,  50.])
 
-        The size and format of output plots can be specified::
+        The format of output plots can be specified::
 
-            In [18]: %%scilab -s 600,800 -f svg
+            In [18]: %%scilab -f svg
                 ...: plot([1, 2, 3]);
 
         '''
         # match current working directory
         self._sci.cd(os.getcwd())
-        self._sci.getd('.')
+        try:
+            self._sci.getd('.')
+        except scilab2py.Scilab2PyError:
+            pass
 
         args = parse_argstring(self.scilab, line)
 
@@ -288,10 +245,6 @@ class ScilabMagics(Magics):
 
         # generate plots in a temporary directory
         plot_dir = tempfile.mkdtemp().replace('\\', '/')
-        if args.size is not None:
-            size = args.size
-        else:
-            size = '400,240'
 
         if args.format is not None:
             plot_format = args.format
@@ -299,60 +252,47 @@ class ScilabMagics(Magics):
             plot_format = 'png'
 
         pre_call = '''
-        global __ipy_figures = [];
-        page_screen_output(0);
+        h = gdf()
+        h.figure_position = [0, 0]
+        h.toolbar_visible = 'off'
+        h.menubar_visible = 'off'
+        h.infobar_visible = 'off'
 
-        function fig_create(src, event)
-          global __ipy_figures;
-          __ipy_figures(size(__ipy_figures) + 1) = src;
-          set(src, "visible", "off");
-        end
-
-        set(0, 'DefaultFigureCreateFcn', @fig_create);
-
-        close all;
-        clear ans;
-
-        # ___<end_pre_call>___ #
-        '''
-
-        post_call = '''
-        # ___<start_post_call>___ #
-
-        # Save output of the last execution
-        if exist("ans") == 1
-          _ = ans;
-        else
-          _ = nan;
-        end
-
-        for f = __ipy_figures
-          outfile = sprintf('%(plot_dir)s/__ipy_sci_fig_%%03d.png', f);
-          try
-            print(f, outfile, '-d%(plot_format)s', '-tight', '-S%(size)s');
-          end
-        end
-
+        function handle_all_fig()
+           ids_array=winsid();
+           for i=1:length(ids_array)
+              id=ids_array(i);
+              outfile = sprintf('%(plot_dir)s/__ipy_sci_fig_%%03d', i);
+              if '%(plot_format)s' == 'jpg' then
+                xs2jpg(id, outfile + '.jpg')
+              elseif '%(plot_format)s' == 'jpeg' then
+                xs2jpg(id, outfile + '.jpeg')
+              elseif '%(plot_format)s' == 'png' then
+                xs2png(id, outfile)
+              else
+                xs2svg(id, outfile)
+              end
+              close(get_figure_handle(id));
+           end
+        endfunction
         ''' % locals()
 
-        code = ' '.join((pre_call, code, post_call))
+        code = ' '.join((pre_call, code)).strip()
+
         try:
-            text_output = self._sci.run(code, verbose=False)
+            resp = self._sci.run(code, verbose=False)
         except (scilab2py.Scilab2PyError) as exception:
             msg = str(exception)
             if 'Scilab Syntax Error' in msg:
                 raise ScilabMagicError(msg)
             msg = msg.replace(pre_call.strip(), '')
-            msg = msg.replace(post_call.strip(), '')
             msg = re.sub('"""\s+', '"""\n', msg)
             msg = re.sub('\s+"""', '\n"""', msg)
             raise ScilabMagicError(msg)
         key = 'ScilabMagic.Scilab'
         display_data = []
 
-        # Publish text output
-        if text_output:
-            display_data.append((key, {'text/plain': text_output}))
+        self._sci.eval_('handle_all_fig()')
 
         # Publish images
         images = []
@@ -362,10 +302,7 @@ class ScilabMagics(Magics):
         rmtree(plot_dir)
 
         plot_mime_type = _mimetypes.get(plot_format, 'image/png')
-        width, height = [int(s) for s in size.split(',')]
         for image in images:
-            if plot_format == 'svg':
-                image = self._fix_gnuplot_svg_size(image, size=(width, height))
             display_data.append((key, {plot_mime_type: image}))
 
         if args.output:
@@ -379,17 +316,9 @@ class ScilabMagics(Magics):
             self._publish_display_data(source=source, data=data)
 
         if return_output:
-            try:
-                ans = self._sci.get('_')
-            except scilab2py.Scilab2PyError:
-                return
-
-            # Unfortunately, Scilab doesn't have a "None" object,
-            # so we can't return any NaN outputs
-            if np.isscalar(ans) and np.isnan(ans):
-                ans = None
-
-            return ans
+            return resp
+        elif not resp is None:
+            print(resp)
 
 
 __doc__ = __doc__.format(
@@ -401,5 +330,4 @@ __doc__ = __doc__.format(
 
 def load_ipython_extension(ip):
     """Load the extension in IPython."""
-    raise Exception
     ip.register_magics(ScilabMagics)
