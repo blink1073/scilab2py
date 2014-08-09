@@ -19,10 +19,10 @@ import time
 
 import numpy as np
 
-from .matwrite import MatWrite
-from .matread import MatRead
-from .utils import get_nout, Scilab2PyError, get_log, Struct
-from .compat import PY2, queue
+from scilab2py.matwrite import MatWrite
+from scilab2py.matread import MatRead
+from scilab2py.utils import get_nout, Scilab2PyError, get_log, Struct
+from scilab2py.compat import PY2, queue
 
 
 class Scilab2Py(object):
@@ -111,17 +111,16 @@ class Scilab2Py(object):
 
         Examples
         --------
-        >>> from scilab import scilab
-        >>> out = scilab.run('y=ones(3,3)')
-        >>> print(out)
-        y =
-        <BLANKLINE>
-                1        1        1
-                1        1        1
-                1        1        1
-        <BLANKLINE>
+        >>> from scilab2py import scilab
+        >>> scilab.run('y=ones(3,3)')
+        >>> print(scilab.get('y'))
+        [[ 1.  1.  1.]
+         [ 1.  1.  1.]
+         [ 1.  1.  1.]]
         >>> scilab.run('x = mean([[1, 2], [3, 4]])')
-        u'x =  2.5000'
+        array([[ 1.,  1.,  1.],
+               [ 1.,  1.,  1.],
+               [ 1.,  1.,  1.]])
 
         """
         # don't return a value from a script
@@ -160,7 +159,7 @@ class Scilab2Py(object):
 
         Examples
         --------
-        >>> from scilab import scilab
+        >>> from scilab2py import scilab
         >>> b = scilab.call('ones', 1, 2)
         >>> print(b)
         [[ 1.  1.]]
@@ -229,6 +228,8 @@ class Scilab2Py(object):
         data = self._eval(cmd, verbose=verbose, timeout=timeout)
         if isinstance(data, dict) and not isinstance(data, Struct):
             data = [data.get(v, None) for v in argout_list]
+            if len(data) == 1 and data[0] is None:
+                data = None
         if verbose:
             self.logger.info(data)
         else:
@@ -250,14 +251,14 @@ class Scilab2Py(object):
 
         Examples
         --------
-        >>> from scilab import scilab
+        >>> from scilab2py import scilab
         >>> y = [1, 2]
         >>> scilab.put('y', y)
         >>> scilab.get('y')
-        array([[1, 2]])
-        >>> scilab.put(['x', 'y'], ['spam', [1, 2, 3, 4]])
+        array([[ 1.,  2.]])
+        >>> scilab.put(['x', 'y'], ['spam', [1., 2., 3., 4.]])
         >>> scilab.get(['x', 'y'])
-        (u'spam', array([[1, 2, 3, 4]]))
+        [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
         """
         if isinstance(names, str):
@@ -290,14 +291,14 @@ class Scilab2Py(object):
             If the variable does not exist in the Scilab session.
 
         Examples:
-          >>> from scilab import scilab
+          >>> from scilab2py import scilab
           >>> y = [1, 2]
           >>> scilab.put('y', y)
           >>> scilab.get('y')
-          array([[1, 2]])
+          array([[ 1.,  2.]])
           >>> scilab.put(['x', 'y'], ['spam', [1, 2, 3, 4]])
           >>> scilab.get(['x', 'y'])
-          (u'spam', array([[1, 2, 3, 4]]))
+          [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
         """
         if isinstance(var, str):
@@ -410,7 +411,7 @@ class Scilab2Py(object):
         """
         exists = self._eval('exists("{0}")'.format(name), log=False,
                             verbose=False)
-        if not np.any(exists) and not name == 'help':
+        if exists == 0 and not name == 'help':
             msg = 'Name: "%s" does not exist on the Scilab session path'
             raise Scilab2PyError(msg % name)
         doc = '''No documentation available, use run("help('%s')")'''

@@ -81,6 +81,7 @@ class ConversionTest(test.TestCase):
     def test_python_conversions(self):
         """Test roundtrip python type conversions
         """
+        self.sci.getd(THIS_DIR)
         for out_type, sci_type, in_type in TYPE_CONVERSIONS:
             if out_type == dict:
                 outgoing = dict(x=1)
@@ -792,6 +793,7 @@ class MiscTests(test.TestCase):
         assert sci._reader.out_file.startswith(thisdir)
         assert sci._writer.in_file.startswith(thisdir)
 
+    @skipif(True)
     @skipif(not hasattr(signal, 'alarm'))
     def test_interrupt(self):
 
