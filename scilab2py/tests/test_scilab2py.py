@@ -53,6 +53,8 @@ TYPE_CONVERSIONS = [
 ]
 
 
+THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+
 if not os.name == 'nt':
     # needed for testing support
     if not hasattr(sys.stdout, 'buffer'):  # pragma: no cover
@@ -103,7 +105,7 @@ class IncomingTest(test.TestCase):
     @classmethod
     def setUpClass(cls):
         with Scilab2Py() as sci:
-            sci.getd(os.path.dirname(__file__))
+            sci.getd(THIS_DIR)
             cls.data = sci.test_datatypes()
 
     def helper(self, base, keys, types):
@@ -179,7 +181,7 @@ class RoundtripTest(test.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sci = Scilab2Py()
-        cls.sci.getd(os.path.dirname(__file__))
+        cls.sci.getd(THIS_DIR)
         cls.data = cls.sci.test_datatypes()
 
     @classmethod
@@ -289,7 +291,7 @@ class BuiltinsTest(test.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sci = Scilab2Py()
-        cls.sci.getd(os.path.dirname(__file__))
+        cls.sci.getd(THIS_DIR)
 
     @classmethod
     def tearDownClass(cls):
@@ -405,7 +407,7 @@ class NumpyTest(test.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sci = Scilab2Py()
-        cls.sci.getd(os.path.dirname(__file__))
+        cls.sci.getd(THIS_DIR)
 
     @classmethod
     def tearDownClass(cls):
@@ -530,7 +532,7 @@ class BasicUsageTest(test.TestCase):
     """
     def setUp(self):
         self.sci = Scilab2Py()
-        self.sci.getd(os.path.dirname(__file__))
+        self.sci.getd(THIS_DIR)
 
     def test_run(self):
         """Test the run command
@@ -558,7 +560,7 @@ class BasicUsageTest(test.TestCase):
                            [-0.93272184, 0.36059668]]))
         out = self.sci.call('roundtrip.sci', 1)
         self.assertEqual(out, 1)
-        fname = os.path.join(os.path.dirname(__file__), 'roundtrip.sci')
+        fname = os.path.join(THIS_DIR, 'roundtrip.sci')
         out = self.sci.call(fname, 1)
         self.assertEqual(out, 1)
         self.assertRaises(Scilab2PyError, self.sci.call, '_spam')
@@ -635,7 +637,7 @@ class MiscTests(test.TestCase):
 
     def setUp(self):
         self.sci = Scilab2Py()
-        self.sci.getd(os.path.dirname(__file__))
+        self.sci.getd(THIS_DIR)
 
     def tearDown(self):
         self.sci.close()
@@ -713,7 +715,7 @@ class MiscTests(test.TestCase):
     def test_plot(self):
         self.sci.figure()
         self.sci.plot([1, 2, 3])
-        self.sci.close_(0)
+        self.sci.close_()
 
     def test_narg_out(self):
         s = self.sci.svd(np.array([[1, 2], [1, 3]]))
@@ -743,7 +745,7 @@ class MiscTests(test.TestCase):
         return
         # TODO: fill this in when we make help commands for funcs
         assert 'user-defined function' in self.sci.test_nodocstring.__doc__
-        assert os.path.dirname(__file__) in self.sci.test_nodocstring.__doc__
+        assert THIS_DIR in self.sci.test_nodocstring.__doc__
 
     def test_func_noexist(self):
         test.assert_raises(Scilab2PyError, self.sci.call, 'Scilab2Py_dummy')
@@ -755,12 +757,12 @@ class MiscTests(test.TestCase):
 
     def test_call_path(self):
         with Scilab2Py() as sci:
-            sci.getd(os.path.dirname(__file__))
+            sci.getd(THIS_DIR)
             DATA = sci.call('test_datatypes.sci')
         assert DATA.string.basic == 'spam'
 
         with Scilab2Py() as sci:
-            path = os.path.join(os.path.dirname(__file__), 'test_datatypes.sci')
+            path = os.path.join(THIS_DIR, 'test_datatypes.sci')
             DATA = sci.call(path)
         assert DATA.string.basic == 'spam'
 

@@ -23,7 +23,7 @@ function [data] = test_datatypes()
     data.num.matrix = [1 2; 3 4];
     data.num.vector = [1 2 3 4];
     data.num.column_vector = [1;2;3;4];
-    data.num.matrix3d = ones([2 3 4]) *
+    data.num.matrix3d = ones([2 3 4]) * %pi;
 
     //////////////////////////////
     // string types
