@@ -358,7 +358,7 @@ class Scilab2Py(object):
                 return self._reader.extract_file()
             except (TypeError, IOError):
                 pass
-        elif resp:
+        if resp:
             return resp
 
     def _make_scilab_command(self, name, doc=None):
@@ -579,21 +579,29 @@ class _Session(object):
         expr = expr.replace("'", "''")
         expr = expr.replace('\n', ';')
 
-        output = 'clear("ans");disp(char(2));'
-        output += 'if execstr("%s; if exists(""ans"") then;'
-        output += 'try; savematfile -v6 %s ans; catch;'
-        output += 'savematfile -v6 %s string(ans); end; end;"'
-        output += ',"errcatch") <>0 then;'
-        output += "disp(lasterror()); disp(char(24));"
-        output += "else; disp(char(3)); end;\n"
-        output = output % (expr, self.outfile, self.outfile)
+        output = """
+        clear("ans");
+        disp(char(2));
+        if execstr("%s", "errcatch") <> 0 then
+            disp(lasterror())
+            disp(char(24))
+        else
+            if exists("ans") then
+                try
+                    savematfile -v6 %s ans;
+                catch
+                    disp(ans);
+                end
+            end
+            disp(char(3))
+        end""" % (expr, self.outfile)
 
         if len(cmds) == 5:
             main_line = cmds[2].strip()
         else:
             main_line = '\n'.join(cmds)
 
-        self.write(output)
+        self.write(output + '\n')
         self.expect(chr(2))
 
         debug_prompt = ("Type 'resume' or 'abort' to return to "
@@ -621,10 +629,10 @@ class _Session(object):
             elif log and logger:
                 logger.debug(line)
 
-            if resp or line:
+            if resp or line.strip():
                 resp.append(line)
 
-        return '\n'.join(resp).strip()
+        return '\n'.join(resp).rstrip()
 
     def interrupt(self):
         self.proc.send_signal(signal.SIGINT)
