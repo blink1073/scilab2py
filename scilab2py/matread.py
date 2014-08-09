@@ -1,6 +1,6 @@
 """
 .. module:: matread
-   :synopsis: Read Python values from a MAT file made by Octave.
+   :synopsis: Read Python values from a MAT file made by Scilab.
               Strives to preserve both value and type in transit.
 
 .. moduleauthor:: Steven Silvester <steven.silvester@ieee.org>
@@ -14,7 +14,7 @@ from .utils import Struct, create_file
 
 
 class MatRead(object):
-    """Read Python values from a MAT file made by Octave.
+    """Read Python values from a MAT file made by Scilab.
 
     Strives to preserve both value and type in transit.
 
@@ -27,7 +27,7 @@ class MatRead(object):
 
     def setup(self, nout, names=None):
         """
-        Generate the argout list and the Octave save command.
+        Generate the argout list and the Scilab save command.
 
         Parameters
         ----------
@@ -39,7 +39,7 @@ class MatRead(object):
         Returns
         -------
         out : tuple (list, str)
-            List of variable names, Octave "save" command line
+            List of variable names, Scilab "savematfile" command line
 
         """
         argout_list = []

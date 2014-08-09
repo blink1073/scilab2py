@@ -98,7 +98,7 @@ class Struct(dict):
     Examples
     ========
     >>> from pprint import pprint
-    >>> from oct2py import Struct
+    >>> from scilab2py import Struct
     >>> a = Struct()
     >>> a.b = 'spam'  # a["b"] == 'spam'
     >>> a.c["d"] = 'eggs'  # a.c.d == 'eggs'
@@ -167,9 +167,9 @@ def get_log(name=None):
     import logging
 
     if name is None:
-        name = 'oct2py'
+        name = 'scilab2py'
     else:
-        name = 'oct2py.' + name
+        name = 'scilab2py.' + name
 
     log = logging.getLogger(name)
     log.setLevel(logging.WARN)

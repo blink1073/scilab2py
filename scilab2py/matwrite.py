@@ -1,6 +1,6 @@
 """
-.. module:: _h5write
-   :synopsis: Write Python values into an MAT file for Octave.
+.. module:: _matwrite
+   :synopsis: Write Python values into an MAT file for Scilab.
               Strives to preserve both value and type in transit.
 
 .. moduleauthor:: Steven Silvester <steven.silvester@ieee.org>
@@ -16,7 +16,7 @@ from .compat import unicode
 
 
 class MatWrite(object):
-    """Write Python values into a MAT file for Octave.
+    """Write Python values into a MAT file for Scilab.
 
     Strives to preserve both value and type in transit.
     """
@@ -43,7 +43,7 @@ class MatWrite(object):
         argin_list : str or array
             Name or list of variable names to be sent.
         load_line : str
-            Octave "load" command.
+            Scilab "loadmatfile" command.
 
         """
         # create a dummy list of var names ("A", "B", "C" ...)

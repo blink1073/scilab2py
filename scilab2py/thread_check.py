@@ -13,12 +13,12 @@ from .session import Scilab2Py, Scilab2PyError
 
 
 class ThreadClass(threading.Thread):
-    """Octave instance thread
+    """Scilab instance thread
     """
 
     def run(self):
         """
-        Create a unique instance of Octave and verify namespace uniqueness.
+        Create a unique instance of Scilab and verify namespace uniqueness.
 
         Raises
         ======

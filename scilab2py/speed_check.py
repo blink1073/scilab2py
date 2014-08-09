@@ -1,6 +1,6 @@
 """
 .. module:: speed_test
-   :synopsis: Checks the speed penalty of the HDF transfers.
+   :synopsis: Checks the speed penalty of the MAT file transfers.
 
 .. moduleauthor:: Steven Silvester <steven.silvester@ieee.org>
 
@@ -14,9 +14,9 @@ from .session import Scilab2Py
 
 
 class SpeedCheck(object):
-    """Checks the speed penalty of the Python to Octave bridge.
+    """Checks the speed penalty of the Python to Scilab bridge.
 
-    Uses timeit to test the raw execution of a Octave command,
+    Uses timeit to test the raw execution of a Scilab command,
     Then tests progressively larger array passing.
 
     """
@@ -32,7 +32,7 @@ class SpeedCheck(object):
         self.scilab.run("x = 1")
 
     def large_array_put(self):
-        """Create a large matrix and load it into the scilab session.
+        """Create a large matrix and load it into the Scilab session.
         """
         self.scilab.put('x', self.array)
 
@@ -44,7 +44,7 @@ class SpeedCheck(object):
     def run(self):
         """Perform the Scilab2Py speed analysis.
 
-        Uses timeit to test the raw execution of an Octave command,
+        Uses timeit to test the raw execution of an Scilab command,
         Then tests progressively larger array passing.
 
         """
