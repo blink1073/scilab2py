@@ -189,7 +189,10 @@ class Scilab2Py(object):
                 self.getd(os.path.dirname(func))
                 func = os.path.basename(func)
             else:
-                self.getd('.')
+                try:
+                    self.getd('.')
+                except Scilab2PyError:
+                    pass
             func = func[:func.index('.')]
 
         # these three lines will form the commands sent to Scilab
