@@ -84,7 +84,6 @@ class ScilabMagics(Magics):
         super(ScilabMagics, self).__init__(shell)
         self._sci = scilab2py.Scilab2Py()
         self._plot_format = 'png'
-        self._first_call = True
 
         # Allow publish_display_data to be overridden for
         # testing purposes.
@@ -217,6 +216,10 @@ class ScilabMagics(Magics):
             self._sci.getd('.')
         except scilab2py.Scilab2PyError:
             pass
+
+        if self._first_call:
+            # we need this var because `_` is a function in Scilab
+            self._sci.put('last_magic_value', '')
 
         args = parse_argstring(self.scilab, line)
 
