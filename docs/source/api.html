@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>API Reference &mdash; Scilab2Py 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.1.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.1.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Scilab2Py 0.1 documentation" href="../index.html" />
+    <link rel="next" title="Information" href="info.html" />
+    <link rel="prev" title="Conversions" href="conversions.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Scilab2Py</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo.html">Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversions.html">Conversions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="info.html">Information</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">API Reference</a><ul>
+<li><a class="reference internal" href="#module-scilab2py">Scilab2Py</a></li>
+<li><a class="reference internal" href="#utils">Utils</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="conversions.html" title="Previous Chapter: Conversions"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm">&laquo; Conversions</span>
+    </a>
+  </li>
+  <li>
+    <a href="info.html" title="Next Chapter: Information"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm">Information &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/source/api.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">API Reference</a><ul>
+<li><a class="reference internal" href="#module-scilab2py">Scilab2Py</a></li>
+<li><a class="reference internal" href="#utils">Utils</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-9">
+      
+  <div class="section" id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-scilab2py">
+<span id="scilab2py"></span><h2>Scilab2Py<a class="headerlink" href="#module-scilab2py" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="scilab2py.Scilab2Py">
+<em class="property">class </em><tt class="descclassname">scilab2py.</tt><tt class="descname">Scilab2Py</tt><big>(</big><em>logger=None</em>, <em>timeout=-1</em>, <em>oned_as='row'</em>, <em>temp_dir=None</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manages a Scliab session.</p>
+<p>Uses MAT files to pass data between Scilab and Numpy.
+The function must either exist as an file in this directory or
+on Scilab&#8217;s path.</p>
+<p>You may provide a logger object for logging events, or the scilab.get_log()
+default will be used.  Events will be logged as debug unless verbose is set
+when calling a command, then they will be logged as info.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>logger</strong> : logging object, optional</p>
+<blockquote>
+<div><p>Optional logger to use for Scilab2Py session</p>
+</div></blockquote>
+<p><strong>timeout</strong> : float, opional</p>
+<blockquote>
+<div><p>Timeout in seconds for commands</p>
+</div></blockquote>
+<p><strong>oned_as</strong> : {&#8216;row&#8217;, &#8216;column&#8217;}, optional</p>
+<blockquote>
+<div><p>If &#8216;column&#8217;, write 1-D numpy arrays as column vectors.
+If &#8216;row&#8217;, write 1-D numpy arrays as row vectors.}</p>
+</div></blockquote>
+<p><strong>temp_dir</strong> : str, optional</p>
+<blockquote class="last">
+<div><p>If specified, the session&#8217;s MAT files will be created in the
+directory, otherwise a default directory is used.  This can be
+a shared memory (tmpfs) path.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Start Scilab and create our MAT helpers</p>
+<dl class="method">
+<dt id="scilab2py.Scilab2Py.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes this Scilab session and removes temp files</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="scilab2py.Scilab2Py.run">
+<tt class="descname">run</tt><big>(</big><em>script</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run artibrary Scilab code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>script</strong> : str</p>
+<blockquote>
+<div><p>Command script to send to Scilab for execution.</p>
+</div></blockquote>
+<p><strong>verbose</strong> : bool, optional</p>
+<blockquote>
+<div><p>Log Scilab output at info level.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out</strong> : str</p>
+<blockquote>
+<div><p>Scilab printed output.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>Scilab2PyError</strong></p>
+<blockquote class="last">
+<div><p>If the script cannot be run by Scilab.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scilab2py</span> <span class="kn">import</span> <span class="n">scilab</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scilab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s">&#39;y=ones(3,3)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">scilab</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">))</span>
+<span class="go">[[ 1.  1.  1.]</span>
+<span class="go"> [ 1.  1.  1.]</span>
+<span class="go"> [ 1.  1.  1.]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scilab</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s">&#39;x = mean([[1, 2], [3, 4]])&#39;</span><span class="p">)</span>
+<span class="go">array([[ 1.,  1.,  1.],</span>
+<span class="go">       [ 1.,  1.,  1.],</span>
+<span class="go">       [ 1.,  1.,  1.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="scilab2py.Scilab2Py.call">
+<tt class="descname">call</tt><big>(</big><em>func</em>, <em>*inputs</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call an Scilab function with optional arguments.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>func</strong> : str</p>
+<blockquote>
+<div><p>Function name to call.</p>
+</div></blockquote>
+<p><strong>inputs</strong> : array_like</p>
+<blockquote>
+<div><p>Variables to pass to the function.</p>
+</div></blockquote>
+<p><strong>nout</strong> : int, optional</p>
+<blockquote>
+<div><p>Number of output arguments.
+This is set automatically based on the number of
+return values requested (see example below).
+You can override this behavior by passing a
+different value.</p>
+</div></blockquote>
+<p><strong>verbose</strong> : bool, optional</p>
+<blockquote>
+<div><p>Log Scilab output at info level.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out</strong> : str or tuple</p>
+<blockquote>
+<div><p>If nout &gt; 0, returns the values from Scilab as a tuple.
+Otherwise, returns the output displayed by Scilab.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>Scilab2PyError</strong></p>
+<blockquote class="last">
+<div><p>If the call is unsucessful.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scilab2py</span> <span class="kn">import</span> <span class="n">scilab</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">scilab</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s">&#39;ones&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+<span class="go">[[ 1.  1.]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">scilab</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s">&#39;zeros&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">array([[ 0.,  0.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">scilab</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s">&#39;svd&#39;</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">((</span><span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">V</span><span class="p">))</span>
+<span class="go">(array([[-0.57604844, -0.81741556],</span>
+<span class="go">       [-0.81741556,  0.57604844]]), array([[ 3.86432845,  0.        ],</span>
+<span class="go">       [ 0.        ,  0.25877718]]), array([[-0.36059668, -0.93272184],</span>
+<span class="go">       [-0.93272184,  0.36059668]]))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="scilab2py.Scilab2Py.put">
+<tt class="descname">put</tt><big>(</big><em>names</em>, <em>var</em>, <em>verbose=False</em>, <em>timeout=-1</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.put" title="Permalink to this definition">¶</a></dt>
+<dd><p>Put a variable into the Scilab session.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>names</strong> : str or list</p>
+<blockquote>
+<div><p>Name of the variable(s).</p>
+</div></blockquote>
+<p><strong>var</strong> : object or list</p>
+<blockquote>
+<div><p>The value(s) to pass.</p>
+</div></blockquote>
+<p><strong>timeout</strong> : float</p>
+<blockquote class="last">
+<div><p>Time to wait for response from Scilab (per character).</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scilab2py</span> <span class="kn">import</span> <span class="n">scilab</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scilab</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scilab</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">)</span>
+<span class="go">array([[ 1.,  2.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scilab</span><span class="o">.</span><span class="n">put</span><span class="p">([</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;spam&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scilab</span><span class="o">.</span><span class="n">get</span><span class="p">([</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">])</span>
+<span class="go">[u&#39;spam&#39;, array([[ 1.,  2.,  3.,  4.]])]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="scilab2py.Scilab2Py.get">
+<tt class="descname">get</tt><big>(</big><em>var</em>, <em>verbose=False</em>, <em>timeout=-1</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a value from the Scilab session.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>var</strong> : str</p>
+<blockquote>
+<div><p>Name of the variable to retrieve.</p>
+</div></blockquote>
+<p><strong>timeout</strong> : float</p>
+<blockquote>
+<div><p>Time to wait for response from Scilab (per character).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out</strong> : object</p>
+<blockquote>
+<div><p>Object returned by Scilab.</p>
+</div></blockquote>
+<p>Raises:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Scilab2PyError</dt>
+<dd><p class="first last">If the variable does not exist in the Scilab session.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Examples:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scilab2py</span> <span class="kn">import</span> <span class="n">scilab</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scilab</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scilab</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">)</span>
+<span class="go">array([[ 1.,  2.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scilab</span><span class="o">.</span><span class="n">put</span><span class="p">([</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;spam&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scilab</span><span class="o">.</span><span class="n">get</span><span class="p">([</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">])</span>
+<span class="go">[u&#39;spam&#39;, array([[ 1.,  2.,  3.,  4.]])]</span>
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scilab2py.Scilab2Py.restart">
+<tt class="descname">restart</tt><big>(</big><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.restart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restart an Scilab session in a clean state</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="utils">
+<h2>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="scilab2py.Scilab2PyError">
+<em class="property">class </em><tt class="descclassname">scilab2py.</tt><tt class="descname">Scilab2PyError</tt><a class="headerlink" href="#scilab2py.Scilab2PyError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when we can&#8217;t open Scilab or Scilab throws an error</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scilab2py.get_log">
+<tt class="descclassname">scilab2py.</tt><tt class="descname">get_log</tt><big>(</big><em>name=None</em><big>)</big><a class="headerlink" href="#scilab2py.get_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a console logger.</p>
+<p>Output may be sent to the logger using the <cite>debug</cite>, <cite>info</cite>, <cite>warning</cite>,
+<cite>error</cite> and <cite>critical</cite> methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> : str</p>
+<blockquote class="last">
+<div><p>Name of the log.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="r1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[R1]</a></td><td>Logging facility for Python,
+<a class="reference external" href="http://docs.python.org/library/logging.html">http://docs.python.org/library/logging.html</a></td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="scilab2py.Struct">
+<em class="property">class </em><tt class="descclassname">scilab2py.</tt><tt class="descname">Struct</tt><a class="headerlink" href="#scilab2py.Struct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scilab style struct, enhanced.</p>
+<p>Supports dictionary and attribute style access.  Can be pickled,
+and supports code completion in a REPL.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scilab2py</span> <span class="kn">import</span> <span class="n">Struct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Struct</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="s">&#39;spam&#39;</span>  <span class="c"># a[&quot;b&quot;] == &#39;spam&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="s">&quot;d&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;eggs&#39;</span>  <span class="c"># a.c.d == &#39;eggs&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="go">{&#39;b&#39;: &#39;spam&#39;, &#39;c&#39;: {&#39;d&#39;: &#39;eggs&#39;}}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="scilab2py.kill_scilab">
+<tt class="descclassname">scilab2py.</tt><tt class="descname">kill_scilab</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/scilab2py.html#kill_scilab"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scilab2py.kill_scilab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kill all Scilab instances (cross-platform).</p>
+<p>This will restart the &#8220;Scilab&#8221; instance.  If you have instantiated
+Any other Scilab2Py objects, you must restart them.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2011 - 2014, Scilab2Py contributors.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
