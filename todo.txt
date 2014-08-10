@@ -1,4 +1,3 @@
 
 x - better handling of path completion for kernels
-
-add inline plotting to scilab kernel
+x - add inline plotting to scilab kernel
