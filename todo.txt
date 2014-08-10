@@ -1,1 +1,2 @@
 
+better handling of path completion for kernels

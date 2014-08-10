@@ -390,12 +390,6 @@ class Scilab2Py(object):
             if name == 'getd':
                 kwargs['nout'] = 0
             kwargs['verbose'] = kwargs.get('verbose', False)
-            """
-            TODO: build docs for non-builtins
-            if not 'Built-in Function' in doc:
-                self._eval('clear("{0}")'.format(name), log=False, verbose=False)
-            """
-            kwargs['command'] = True
             return self.call(name, *args, **kwargs)
 
         # convert to ascii for pydoc
