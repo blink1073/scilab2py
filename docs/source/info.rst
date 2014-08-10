@@ -4,7 +4,7 @@ Information
 ******************
 
 Using Script Files
-=============
+==================
 There are several ways to use a script file in Scilab2Py.  First, you can either
 call the script using the full path to it, or `getd` for the directory
 containing the script.  When using `getd`, you can use `run`, `call`,

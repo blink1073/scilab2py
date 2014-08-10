@@ -21,7 +21,7 @@ Scilab Path Installation
 
 The goal is to be able to call Scilab from the command prompt.
 
-On *nix systems, open a shell and type ``scilab --nw``.
+On Posix systems, open a shell and type ``scilab --nw``.
 If that does not work, add the path to your Scilab executable in your PATH in your ``.profile`` file.
 
 On Windows, open a ``cmd`` prompt and type ``Scilex``.

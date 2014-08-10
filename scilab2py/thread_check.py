@@ -9,7 +9,7 @@
 from __future__ import print_function
 import threading
 import datetime
-from .session import Scilab2Py, Scilab2PyError
+from scilab2py import Scilab2Py, Scilab2PyError
 
 
 class ThreadClass(threading.Thread):

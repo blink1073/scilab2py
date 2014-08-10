@@ -3,7 +3,7 @@ API Reference
 ********************
 
 Scilab2Py
-======
+=========
 .. module:: scilab2py
 .. autoclass:: Scilab2Py
    :members:
@@ -15,6 +15,6 @@ Utils
 
 .. autofunction:: get_log
 
-.. autofunction:: Struct
+.. autoclass:: Struct
 
 .. autofunction:: kill_scilab
