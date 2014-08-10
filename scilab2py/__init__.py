@@ -30,7 +30,7 @@ import imp
 import functools
 import os
 
-from .session import Scilab2Py, Scilab2PyError
+from .core import Scilab2Py, Scilab2PyError
 from .utils import Struct, get_log
 from .demo import demo
 from .speed_check import speed_test
@@ -60,7 +60,7 @@ def kill_scilab():
 # clean up namespace
 del functools, imp, os
 try:
-    del session, utils, speed_check, thread_check
+    del core, utils, speed_check, thread_check
 except NameError:  # pragma: no cover
     pass
 

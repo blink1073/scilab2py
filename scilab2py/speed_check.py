@@ -10,7 +10,7 @@ from __future__ import print_function
 import time
 import timeit
 import numpy as np
-from .session import Scilab2Py
+from scilab2py import Scilab2Py
 
 
 class SpeedCheck(object):
