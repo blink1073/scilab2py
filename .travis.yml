@@ -32,7 +32,9 @@ install:
   - cd
 
 script:
-  # sanity check
+  # sanity checks
+  - scilab -version
+  - python -c "import scilab2py;print(scilab2py.__version__)"
   - python -c "from scilab2py import scilab;print(scilab.ones(3,3))"
     # run coverage on py2.7, regular on others
   - export NOSE_ARGS="-v --exe --processes=-1 --process-timeout=120 --process-restartworker"
