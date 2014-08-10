@@ -166,3 +166,119 @@ class ConversionsTest(test.TestCase):
             if type(incoming) != in_type:
                 assert in_type(incoming) == incoming
             assert type(incoming) == in_type
+
+
+class BuiltinsTest(test.TestCase):
+    """Test the exporting of standard Python data types, checking their type.
+
+    Runs roundtrip.sci and tests the types of all the values to make sure they
+    were brought in properly.
+
+    """
+    @classmethod
+    def setUpClass(cls):
+        cls.sci = Scilab2Py()
+        cls.sci.getd(THIS_DIR)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.sci.close()
+
+    def helper(self, outgoing, incoming=None, expected_type=None):
+        """
+        Uses roundtrip.sci to make sure the data goes out and back intact.
+
+        Parameters
+        ==========
+        outgoing : object
+            Object to send to Scilab
+        incoming : object, optional
+            Object already retreived from Scilab
+
+        """
+        if incoming is None:
+            incoming = self.sci.roundtrip(outgoing)
+        if not expected_type:
+            for out_type, _, in_type in TYPE_CONVERSIONS:
+                if out_type == type(outgoing):
+                    expected_type = in_type
+                    break
+        if not expected_type:
+            expected_type = np.ndarray
+        try:
+            self.assertEqual(incoming, outgoing)
+        except ValueError:
+            assert np.allclose(np.array(incoming), np.array(outgoing))
+        if type(incoming) != expected_type:
+            incoming = self.sci.roundtrip(outgoing)
+            try:
+                assert np.allclose(expected_type(incoming), incoming)
+            except TypeError:
+                assert expected_type(incoming), incoming
+
+    def test_set(self):
+        """Test python set type
+        """
+        test = set((1, 2, 3, 3))
+        incoming = self.sci.roundtrip(test)
+        assert np.allclose(tuple(test), incoming)
+        self.assertEqual(type(incoming), np.ndarray)
+
+    def test_tuple(self):
+        """Test python tuple type
+        """
+        test = tuple((1, 2, 3))
+        self.helper(test, expected_type=np.ndarray)
+
+    def test_list(self):
+        """Test python list type
+        """
+        tests = [[1, 2], [3, 4]]
+        self.helper(tests[0])
+        self.helper(tests[1], expected_type=list)
+
+    def test_list_of_tuples(self):
+        """Test python list of tuples
+        """
+        test = [(1, 2), (1.5, 3.2)]
+        self.helper(test)
+
+    def test_numeric(self):
+        """Test python numeric types
+        """
+        test = np.random.randint(1000)
+        self.helper(int(test))
+        self.helper(long(test))
+        self.helper(float(test))
+        self.helper(complex(1, 2))
+
+    def test_string(self):
+        """Test python str and unicode types
+        """
+        tests = ['spam', unicode('eggs')]
+        for t in tests:
+            self.helper(t)
+
+    def test_nested_list(self):
+        """Test python nested lists
+        """
+        test = [[1, 2], [3, 4]]
+        self.helper(test)
+        incoming = self.sci.roundtrip(test)
+        for i in range(len(test)):
+            assert np.alltrue(incoming[i] == np.array(test[i]))
+
+    def test_bool(self):
+        """Test boolean values
+        """
+        tests = (True, False)
+        for t in tests:
+            incoming = self.sci.roundtrip(t)
+            self.assertEqual(incoming, t)
+            self.assertEqual(incoming.dtype, np.float)
+
+    def test_none(self):
+        """Test sending None type
+        """
+        incoming = self.sci.roundtrip(None)
+        assert np.isnan(incoming)
