@@ -1,7 +1,7 @@
 # Note: This is meant for Scilab2Py developer use only
 .PHONY: all clean test cover release gh-pages
 
-export TEST_ARGS="--exe -v --processes=-1 --process-timeout=120 --process-restartworker --with-doctest"
+export TEST_ARGS=--exe -v --processes=-1 --process-timeout=120 --process-restartworker --with-doctest
 
 all:
 	make clean
@@ -23,7 +23,7 @@ test:
 cover:
 	make clean
 	pip install nose-cov
-	nosetests -v --exe --with-cov --cov scilab2py --cov-config .coveragerc scilab2py
+	nosetests $(TEST_ARGS) --with-cov --cov scilab2py --cov-config .coveragerc scilab2py
 	coverage annotate
 
 release:

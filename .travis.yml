@@ -33,7 +33,7 @@ install:
 
 script:
     # run coverage on py2.7, regular on others
-  - export NOSE_ARGS="-v --exe --processes=-1 --process-timeout=120 --process-restartworker"
+  - export NOSE_ARGS=-v --exe --processes=-1 --process-timeout=120 --process-restartworker
   - if [[ $CONDA == python=2.7* ]]; then
       nosetests $NOSE_ARGS --with-doctest --with-cov --cover-package scilab2py scilab2py;
     else
