@@ -426,7 +426,7 @@ class Scilab2Py(object):
         doc = "No documentation available for `%s`" % name
 
         try:
-            typeof = self._eval('typeof(%s)' % name)
+            typeof = self._eval('typeof(%s);' % name)
 
         except Scilab2PyError:
             raise Scilab2PyError('No function named `%s`' % name)
@@ -436,7 +436,7 @@ class Scilab2Py(object):
             doc += """\nUse run("help %s") for full docs.""" % name
 
         elif typeof == 'function':
-            lines = self._eval('fun2string(%s)' % name)
+            lines = self._eval('fun2string(%s);' % name)
             lines = lines.replace('!', ' ').splitlines()
 
             docs = [lines[0].replace('ans(', '%s(' % name), ' ']
