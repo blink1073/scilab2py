@@ -217,10 +217,6 @@ class ScilabMagics(Magics):
         except scilab2py.Scilab2PyError:
             pass
 
-        if self._first_call:
-            # we need this var because `_` is a function in Scilab
-            self._sci.put('last_magic_value', '')
-
         args = parse_argstring(self.scilab, line)
 
         # arguments 'code' in line are prepended to the cell lines
