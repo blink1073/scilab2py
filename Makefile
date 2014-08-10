@@ -37,8 +37,7 @@ release:
 	echo "*** Do not forget to 'make gh-pages'"
 
 gh-pages:
-	pip install sphinx-bootstrap-theme
-	pip install numpydoc
+	pip install sphinx-bootstrap-theme numpydoc sphinx
 	git checkout master
 	git pull origin master
 	rm -rf ../temp_docs
