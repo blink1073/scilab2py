@@ -213,15 +213,13 @@ class Scilab2Py(object):
             # run foo
             call_line += '{0}'.format(func)
 
-        post_call = ''
-
         if not call_line.endswith(')') and nout:
             call_line += '()'
         else:
             call_line += ';'
 
         # create the command and execute in Scilab
-        cmd = [load_line, call_line, post_call, save_line]
+        cmd = [load_line, call_line, save_line]
         data = self._eval(cmd, verbose=verbose, timeout=timeout)
         if isinstance(data, dict) and not isinstance(data, Struct):
             data = [data.get(v, None) for v in argout_list]
@@ -614,8 +612,10 @@ class _Session(object):
                     last_ans = double(last_ans)
                 end
                 if or(type(last_ans) == [1,2,3,5,6,7,8,10]) then
-                    savematfile -v6 %s last_ans;
                     _ = last_ans;
+                    if exists("a__") == 0 then
+                        savematfile -v6 %s _;
+                    end
                 elseif type(last_ans)
                     disp(last_ans);
                 end

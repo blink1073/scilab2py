@@ -17,7 +17,6 @@ test:
 	python setup.py build
 	export PYTHONWARNINGS="all";
 	cd build; nosetests $(TEST_ARGS)
-	cd build; ~/anaconda/envs/py34/bin/nosetests $(TEST_ARGS)
 	rm -rf build
 	python setup.py check -r
 

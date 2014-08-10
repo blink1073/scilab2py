@@ -48,8 +48,6 @@ class MatRead(object):
                 argout_list.append(names.pop(0))
             else:
                 argout_list.append("%s__" % chr(i + 97))
-        if not os.path.exists(self.out_file):
-            self.out_file = create_file(self.temp_dir)
         save_line = 'savematfile -v6 {0} {1}'
         save_line = save_line.format(self.out_file,
                                      ' '.join(argout_list))
@@ -78,7 +76,7 @@ class MatRead(object):
         """
         data = loadmat(self.out_file)
         for key in data.keys():
-            if key.startswith('_'):
+            if key.startswith('_') and not key == '_':
                 del data[key]
             else:
                 data[key] = get_data(data[key])
