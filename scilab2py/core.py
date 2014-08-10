@@ -429,13 +429,41 @@ class Scilab2Py(object):
            If the procedure or object does not exist.
 
         """
-        exists = self._eval('exists("{0}")'.format(name), log=False,
-                            verbose=False)
-        if exists == 0 and not name == 'help':
-            msg = 'Name: "%s" does not exist on the Scilab session path'
-            raise Scilab2PyError(msg % name)
-        doc = '''No documentation available, use run("help('%s')")'''
-        return doc % name
+        doc = "No documentation available for `%s`" % name
+
+        try:
+            typeof = self._eval('typeof(%s)' % name)
+
+        except Scilab2PyError:
+            raise Scilab2PyError('No function named `%s`' % name)
+
+        if typeof == 'fptr':
+            doc = "`%s` is a built-in Scilab function." % name
+            doc += """\nUse run("help %s") for full docs.""" % name
+
+        elif typeof == 'function':
+            lines = self._eval('fun2string(%s)' % name)
+            lines = lines.replace('!', ' ').splitlines()
+
+            docs = [lines[0].replace('ans(', '%s(' % name), ' ']
+
+            in_doc = False
+            for line in lines[1:]:
+                line = line.strip()
+
+                if line.startswith('//'):
+                    docs.append(line[2:])
+                    in_doc = True
+
+                elif in_doc and line:
+                    break
+
+            doc = '\n'.join(docs)
+
+        else:
+            raise Scilab2PyError('No function named `%s`' % name)
+
+        return doc
 
     def __getattr__(self, attr):
         """Automatically creates a wapper to an Scilab function or object.
@@ -614,7 +642,11 @@ class _Session(object):
                 if or(type(last_ans) == [1,2,3,5,6,7,8,10]) then
                     _ = last_ans;
                     if exists("a__") == 0 then
-                        savematfile -v6 %s _;
+                        try
+                            savematfile -v6 %s _;
+                        catch
+                            disp(_)
+                        end
                     end
                 elseif type(last_ans)
                     disp(last_ans);
