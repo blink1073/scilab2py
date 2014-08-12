@@ -19,7 +19,8 @@ import time
 
 from scilab2py.matwrite import MatWrite
 from scilab2py.matread import MatRead
-from scilab2py.utils import get_nout, Scilab2PyError, get_log, Struct
+from scilab2py.utils import (
+    get_nout, Scilab2PyError, get_log, Struct, _remove_temp_files)
 from scilab2py.compat import PY2, queue, unicode
 
 
@@ -56,6 +57,7 @@ class Scilab2Py(object):
         """
         self._oned_as = oned_as
         self._temp_dir = temp_dir
+        atexit.register(lambda: _remove_temp_files(temp_dir))
         self.timeout = timeout
         if not logger is None:
             self.logger = logger
