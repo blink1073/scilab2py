@@ -47,7 +47,7 @@ Features
 
 Installation
 ------------
-You must have Scilab_ installed and in your PATH.
+You must have Scilab_ 5.5 installed and in your PATH.
 You must have the Numpy and Scipy libraries installed.
 
 To install Scilab2Py, simply:
@@ -55,6 +55,9 @@ To install Scilab2Py, simply:
 .. code-block:: bash
 
     $ pip install scilab2py
+
+Note: scilab2py has been tested with Ubuntu 14.04 and Windows 7.  It
+does not work on Ubuntu 12.04.
 
 
 Documentation
