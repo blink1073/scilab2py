@@ -17,13 +17,20 @@ test:
 	python setup.py build
 	export PYTHONWARNINGS="all";
 	cd build; nosetests $(TEST_ARGS)
-	rm -rf build
-	python setup.py check -r
+	make clean
+
+test3:
+	make clean
+	source activate py3k
+	python setup.py build
+	export PYTHONWARNINGS="all";
+	cd build; nosetests $(TEST_ARGS)
+	make clean
 
 cover:
 	make clean
-	pip install nose-cov
-	nosetests $(TEST_ARGS) --with-cov --cov scilab2py --cov-config .coveragerc scilab2py
+	pip install nose-cov coveralls
+	nosetests $(TEST_ARGS) --with-cov --cov scilab2py --cov-config .coveragerc scilab2py && coveralls
 	coverage annotate
 
 release:
