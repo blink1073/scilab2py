@@ -85,8 +85,8 @@ class Scilab2Py(object):
         try:
             self._writer.remove_file()
             self._reader.remove_file()
-        except Scilab2PyError:
-            pass
+        except Scilab2PyError as e:
+            self.logger.debug(e)
 
     def run(self, script, **kwargs):
         """
@@ -191,8 +191,8 @@ class Scilab2Py(object):
             else:
                 try:
                     self.getd('.')
-                except Scilab2PyError:
-                    pass
+                except Scilab2PyError as e:
+                    self.logger.debug(e)
             func = func[:func.index('.')]
 
         # these three lines will form the commands sent to Scilab
@@ -377,8 +377,8 @@ class Scilab2Py(object):
         if os.path.exists(self._reader.out_file):
             try:
                 return self._reader.extract_file()
-            except (TypeError, IOError):
-                pass
+            except (TypeError, IOError) as e:
+                self.logger.debug(e)
 
         if resp:
             return resp
@@ -400,8 +400,8 @@ class Scilab2Py(object):
         # convert to ascii for pydoc
         try:
             doc = doc.encode('ascii', 'replace').decode('ascii')
-        except UnicodeDecodeError:
-            pass
+        except UnicodeDecodeError as e:
+            self.logger.debug(e)
 
         scilab_command.__doc__ = "\n" + doc
         scilab_command.__name__ = name
@@ -615,8 +615,8 @@ class _Session(object):
         if os.path.exists(self.outfile):
             try:
                 os.remove(self.outfile)
-            except OSError:
-                pass
+            except OSError as e:
+                self.logger.debug(e)
 
         # use ascii code 2 for start of text, 3 for end of text, and
         # 24 to signal an error
@@ -631,6 +631,8 @@ class _Session(object):
         expr = expr.replace('"', '""')
         expr = expr.replace("'", "''")
         expr = expr.replace('\n', ';')
+
+        self.logger.debug(expr)
 
         output = """
         clear("ans");
@@ -768,12 +770,12 @@ class _Session(object):
         try:
             self.write('\nexit\n')
         except Exception as e:  # pragma: no cover
-            self.logger.error(e)
+            self.logger.debug(e)
 
         try:
             self.proc.terminate()
         except Exception as e:  # pragma: no cover
-            self.logger.error(e)
+            self.logger.debug(e)
 
         self.proc = None
 
