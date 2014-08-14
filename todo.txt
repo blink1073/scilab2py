@@ -1,3 +1,29 @@
 
 x - better handling of path completion for kernels
 x - add inline plotting to scilab kernel
+
+
+test on Windows
+
+py33, and py34 do not work at all
+
+py26 errors:
+
+FAIL: Send ndarrays and make sure we get the same array back
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/silvester/workspace/scilab2py/build/lib/scilab2py/tests/test_numpy.py", line 97, in test_ndarrays
+    outgoing)
+AssertionError
+
+======================================================================
+FAIL: Send scalar numpy types and make sure we get the same number back.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/silvester/workspace/scilab2py/build/lib/scilab2py/tests/test_numpy.py", line 53, in test_scalars
+    outgoing)
+AssertionError
+
+----------------------------------------------------------------------
+Ran 80 tests in 141.074s
+

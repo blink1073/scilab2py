@@ -1,6 +1,6 @@
 """
 .. module:: session
-   :synopsis: Main module for scilabpy package.
+   :synopsis: Main module for scilab2py package.
               Contains the Scilab session object Scilab2Py
 
 .. moduleauthor:: Steven Silvester <steven.silvester@ieee.org>
@@ -111,16 +111,16 @@ class Scilab2Py(object):
 
         Examples
         --------
-        >>> from scilab2py import scilab
-        >>> scilab.run('y=ones(3,3)')
-        >>> print(scilab.get('y'))
+        >>> from scilab2py import Scilab2Py
+        >>> sci = Scilab2Py()
+        >>> sci.run('y=ones(3,3)')
+        >>> print(sci.get('y'))
         [[ 1.  1.  1.]
          [ 1.  1.  1.]
          [ 1.  1.  1.]]
-        >>> scilab.run('x = mean([[1, 2], [3, 4]])')
-        array([[ 1.,  1.,  1.],
-               [ 1.,  1.,  1.],
-               [ 1.,  1.,  1.]])
+        >>> sci.run('x = mean([[1, 2], [3, 4]])')
+        >>> print(sci.get('x'))
+        2.5
 
         """
         # don't return a value from a script
@@ -159,15 +159,16 @@ class Scilab2Py(object):
 
         Examples
         --------
-        >>> from scilab2py import scilab
-        >>> b = scilab.call('ones', 1, 2)
+        >>> from scilab2py import Scilab2Py
+        >>> sci = Scilab2Py()
+        >>> b = sci.call('ones', 1, 2)
         >>> print(b)
         [[ 1.  1.]]
         >>> x, y = 1, 2
-        >>> a = scilab.call('zeros', x, y)
+        >>> a = sci.call('zeros', x, y)
         >>> a
         array([[ 0.,  0.]])
-        >>> U, S, V = scilab.call('svd', [[1, 2], [1, 3]])
+        >>> U, S, V = sci.call('svd', [[1, 2], [1, 3]])
         >>> print((U, S, V))
         (array([[-0.57604844, -0.81741556],
                [-0.81741556,  0.57604844]]), array([[ 3.86432845,  0.        ],
@@ -248,13 +249,14 @@ class Scilab2Py(object):
 
         Examples
         --------
-        >>> from scilab2py import scilab
+        >>> from scilab2py import Scilab2Py
+        >>> sci = Scilab2Py()
         >>> y = [1, 2]
-        >>> scilab.put('y', y)
-        >>> scilab.get('y')
+        >>> sci.put('y', y)
+        >>> sci.get('y')
         array([[ 1.,  2.]])
-        >>> scilab.put(['x', 'y'], ['spam', [1., 2., 3., 4.]])
-        >>> scilab.get(['x', 'y'])
+        >>> sci.put(['x', 'y'], ['spam', [1., 2., 3., 4.]])
+        >>> sci.get(['x', 'y'])
         [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
         """
@@ -288,13 +290,14 @@ class Scilab2Py(object):
             If the variable does not exist in the Scilab session.
 
         Examples:
-          >>> from scilab2py import scilab
+          >>> from scilab2py import Scilab2Py
+          >>> sci = Scilab2Py()
           >>> y = [1, 2]
-          >>> scilab.put('y', y)
-          >>> scilab.get('y')
+          >>> sci.put('y', y)
+          >>> sci.get('y')
           array([[ 1.,  2.]])
-          >>> scilab.put(['x', 'y'], ['spam', [1, 2, 3, 4]])
-          >>> scilab.get(['x', 'y'])
+          >>> sci.put(['x', 'y'], ['spam', [1, 2, 3, 4]])
+          >>> sci.get(['x', 'y'])
           [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
         """
@@ -425,6 +428,12 @@ class Scilab2Py(object):
            If the procedure or object does not exist.
 
         """
+        exists = self._eval('exists("{0}")'.format(name), log=False,
+                            verbose=False)
+        if exists == 0 and not name == 'help':
+            msg = 'Name: "%s" does not exist on the Scilab session path'
+            raise Scilab2PyError(msg % name)
+
         doc = "No documentation available for `%s`" % name
 
         try:
@@ -456,9 +465,6 @@ class Scilab2Py(object):
 
             doc = '\n'.join(docs)
 
-        else:
-            raise Scilab2PyError('No function named `%s`' % name)
-
         return doc
 
     def __getattr__(self, attr):
@@ -488,7 +494,7 @@ class Scilab2Py(object):
         """
         self._reader = MatRead(self._temp_dir)
         self._writer = MatWrite(self._temp_dir, self._oned_as)
-        self._session = _Session(self._reader.out_file)
+        self._session = _Session(self._reader.out_file, self.logger)
 
 
 class _Reader(object):
@@ -530,7 +536,7 @@ class _Session(object):
     """Low-level session Scilab session interaction.
     """
 
-    def __init__(self, outfile):
+    def __init__(self, outfile, logger):
         self.timeout = int(1e6)
         self.read_queue = queue.Queue()
         self.proc = self.start()
@@ -538,6 +544,7 @@ class _Session(object):
         self.stdout = sys.stdout
         self.outfile = outfile
         self.set_timeout()
+        self.logger = logger
         atexit.register(self.close)
 
     def start(self):
@@ -593,6 +600,8 @@ class _Session(object):
     def evaluate(self, cmds, verbose=True, log=True, logger=None, timeout=-1):
         """Perform the low-level interaction with an Scilab Session
         """
+        self.logger = logger
+
         if not timeout == -1:
             self.set_timeout(timeout)
 
@@ -754,8 +763,13 @@ class _Session(object):
             self.stdout.write(prompt)
 
     def close(self):
-        """Cleanly close an Scilab session
+        """Cleanly close a Scilab session
         """
+        try:
+            self.write('\nexit\n')
+        except Exception as e:
+            self.logger.error(e)
+
         try:
             self.proc.terminate()
         except (OSError, AttributeError):  # pragma: no cover
@@ -763,10 +777,7 @@ class _Session(object):
         self.proc = None
 
     def __del__(self):
-        try:
-            self.proc.terminate()
-        except (OSError, AttributeError):
-            pass
+        self.close()
 
 
 def _test():  # pragma: no cover

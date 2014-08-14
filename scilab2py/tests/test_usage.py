@@ -5,10 +5,11 @@ import pickle
 import numpy as np
 import numpy.testing as test
 
-from scilab2py import Scilab2Py, Scilab2PyError
+from scilab2py import Scilab2Py, Scilab2PyError, scilab
 from scilab2py.utils import Struct
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+scilab.close()
 
 
 class BasicUsageTest(test.TestCase):
@@ -17,6 +18,9 @@ class BasicUsageTest(test.TestCase):
     def setUp(self):
         self.sci = Scilab2Py()
         self.sci.getd(THIS_DIR)
+
+    def tearDown(self):
+        self.sci.close()
 
     def test_run(self):
         """Test the run command
@@ -132,7 +136,7 @@ class BasicUsageTest(test.TestCase):
         assert U.shape == S.shape == V.shape == (2, 2)
 
     def test_temp_dir(self):
-        sci = Scilab2Py(temp_dir='.')
-        thisdir = os.path.dirname(os.path.abspath('.'))
-        assert sci._reader.out_file.startswith(thisdir)
-        assert sci._writer.in_file.startswith(thisdir)
+        with Scilab2Py(temp_dir='.') as sci:
+            thisdir = os.path.dirname(os.path.abspath('.'))
+            assert sci._reader.out_file.startswith(thisdir)
+            assert sci._writer.in_file.startswith(thisdir)

@@ -54,6 +54,7 @@ def kill_scilab():
         os.system('taskkill /im Scilex /f')
     else:
         os.system('killall -9 scilab')
+        os.system('killall -9 scilab-bin')
     scilab.restart()
 
 

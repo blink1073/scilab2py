@@ -4,10 +4,11 @@ import os
 import numpy as np
 import numpy.testing as test
 
-from scilab2py import Scilab2Py
+from scilab2py import Scilab2Py, scilab
 
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+scilab.close()
 
 
 class NumpyTest(test.TestCase):

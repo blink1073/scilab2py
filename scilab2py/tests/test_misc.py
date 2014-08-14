@@ -7,10 +7,11 @@ import numpy as np
 import numpy.testing as test
 from numpy.testing.decorators import skipif
 
-from scilab2py import Scilab2Py, Scilab2PyError, get_log
+from scilab2py import Scilab2Py, Scilab2PyError, get_log, scilab
 from scilab2py.compat import StringIO
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+scilab.close()
 
 
 class MiscTests(test.TestCase):
@@ -46,7 +47,7 @@ class MiscTests(test.TestCase):
         resp = '\n'.join(lines)
         assert 'zeros(A__)' in resp
         assert '0.0' in resp
-        assert lines[0].startswith('loadmatfile')
+        assert 'loadmatfile ' in resp
 
         # now make an object with a desired logger
         logger = get_log('test')
@@ -66,7 +67,7 @@ class MiscTests(test.TestCase):
         resp = '\n'.join(lines)
         assert 'zeros(A__)' in resp
         assert '0.' in resp
-        assert lines[0].startswith('loadmatfile')
+        assert 'loadmatfile' in resp
 
     def test_demo(self):
         from scilab2py import demo
@@ -150,6 +151,7 @@ class MiscTests(test.TestCase):
         sci = Scilab2Py(oned_as='column')
         sci.put('x', x)
         assert sci.get('x').shape == x[:, np.newaxis].shape
+        sci.close()
 
     @skipif(not hasattr(signal, 'alarm'))
     def test_interrupt(self):

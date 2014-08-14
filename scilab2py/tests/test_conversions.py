@@ -5,9 +5,11 @@ import os
 import numpy as np
 import numpy.testing as test
 
-from scilab2py import Scilab2Py
+from scilab2py import Scilab2Py, scilab
 from scilab2py.compat import unicode, long
 
+
+scilab.close()
 
 TYPE_CONVERSIONS = [
     (int, 'constant', np.float64),

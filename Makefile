@@ -1,7 +1,8 @@
 # Note: This is meant for Scilab2Py developer use only
 .PHONY: all clean test cover release gh-pages
 
-export TEST_ARGS=--exe -v --processes=-1 --process-timeout=120 --process-restartworker --with-doctest
+export TEST_ARGS=--exe -v --with-doctest
+export KILL_SCILAB="from scilab2py import kill_scilab; kill_scilab()"
 
 all:
 	make clean
@@ -11,26 +12,19 @@ clean:
 	rm -rf build
 	rm -rf dist
 	find . -name "*.pyc" -o -name "*.py,cover"| xargs rm -f
+	python -c $(KILL_SCILAB)
+	killall -9 nosetests; true
 
 test:
 	make clean
 	python setup.py build
-	export PYTHONWARNINGS="all";
-	cd build; nosetests $(TEST_ARGS)
-	make clean
-
-test3:
-	make clean
-	source activate py3k
-	python setup.py build
-	export PYTHONWARNINGS="all";
-	cd build; nosetests $(TEST_ARGS)
+	export PYTHONWARNINGS="all"; cd build; nosetests $(TEST_ARGS)
 	make clean
 
 cover:
 	make clean
 	pip install nose-cov coveralls
-	nosetests $(TEST_ARGS) --with-cov --cov scilab2py --cov-config .coveragerc scilab2py && coveralls
+	nosetests $(TEST_ARGS) --with-cov --cov scilab2py && coveralls
 	coverage annotate
 
 release:
