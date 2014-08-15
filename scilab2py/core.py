@@ -10,7 +10,6 @@ from __future__ import print_function
 import os
 import re
 import atexit
-import doctest
 import signal
 import subprocess
 import sys
@@ -87,8 +86,7 @@ class Scilab2Py(object):
             self._writer.remove_file()
             self._reader.remove_file()
         except Scilab2PyError as e:
-            #self.logger.debug(e)
-            pass
+            self.logger.debug(e)
 
     def run(self, script, **kwargs):
         """
@@ -773,13 +771,12 @@ class _Session(object):
         try:
             self.write('\nexit\n')
         except Exception as e:  # pragma: no cover
-            #self.logger.debug(e)
-            pass
+            self.logger.debug(e)
+
         try:
             self.proc.terminate()
         except Exception as e:  # pragma: no cover
-            #self.logger.debug(e)
-            pass
+            self.logger.debug(e)
 
         self.proc = None
 
