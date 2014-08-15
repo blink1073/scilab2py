@@ -191,7 +191,8 @@ class RoundtripTest(test.TestCase):
                     if subkey == 'int':
                         continue
                     cmd = 'isequal(x.{0}.{1},y.{0}.{1})'.format(key, subkey)
-                    assert self.sci.run(cmd)
+                    if np.all(self.sci.run(cmd)) == 0:
+                        assert False
                 continue
             else:
                 cmd = 'isequal(x.{0},y.{0})'.format(key)
