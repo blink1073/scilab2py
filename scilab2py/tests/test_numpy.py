@@ -15,7 +15,7 @@ class NumpyTest(test.TestCase):
     """Check value and type preservation of Numpy arrays
     """
     codes = np.typecodes['All']
-    blacklist_codes = ['V', 'M', 'f', 'F']
+    blacklist_codes = ['V', 'M', 'f', 'F', 'm']
     blacklist_names = ['float128', 'float96', 'complex192', 'complex256']
 
     @classmethod
@@ -41,8 +41,6 @@ class NumpyTest(test.TestCase):
             if outgoing.dtype.name in self.blacklist_names:
                 continue
             incoming = self.sci.roundtrip(outgoing)
-            if outgoing.dtype.str in ['<M8[us]', '<m8[us]']:
-                outgoing = outgoing.astype(np.uint64)
             if outgoing.dtype.kind in 'bui':
                 outgoing = outgoing.astype(np.float)
             try:

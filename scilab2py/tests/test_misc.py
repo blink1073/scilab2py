@@ -78,7 +78,7 @@ class MiscTests(test.TestCase):
 
     def test_remove_files(self):
         from scilab2py.utils import _remove_temp_files
-        _remove_temp_files()
+        _remove_temp_files(self.sci._temp_dir)
 
     def test_threads(self):
         from scilab2py import thread_test

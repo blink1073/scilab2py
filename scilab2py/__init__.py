@@ -9,7 +9,7 @@ MAT files.  Usage is as simple as:
     >>> import scilab2py
     >>> sci = scilab2py.Scilab2Py()
     >>> x = sci.zeros(3,3)
-    >>> print x, x.dtype
+    >>> print(x, x.dtype)  # doctest: +SKIP
     [[ 0.  0.  0.]
      [ 0.  0.  0.]
      [ 0.  0.  0.]] float64

@@ -20,7 +20,7 @@ class MatWrite(object):
 
     Strives to preserve both value and type in transit.
     """
-    def __init__(self, temp_dir=None, oned_as='row'):
+    def __init__(self, temp_dir, oned_as='row'):
         self.oned_as = oned_as
         self.temp_dir = temp_dir
         self.in_file = create_file(self.temp_dir)

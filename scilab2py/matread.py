@@ -19,7 +19,7 @@ class MatRead(object):
     Strives to preserve both value and type in transit.
 
     """
-    def __init__(self, temp_dir=None):
+    def __init__(self, temp_dir):
         """Initialize our output file
         """
         self.temp_dir = temp_dir

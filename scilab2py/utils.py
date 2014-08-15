@@ -12,18 +12,12 @@ import tempfile
 from .compat import PY2
 
 
-def _remove_temp_files(dirname=None):
+def _remove_temp_files(dirname):
     """
     Remove the created mat files in the user's temp folder
     """
     import os
     import glob
-    import tempfile
-
-    if not dirname:
-        temp = tempfile.NamedTemporaryFile()
-        temp.close()
-        dirname = os.path.dirname(temp.name)
 
     for fname in glob.glob(os.path.join(dirname, 'tmp*.mat')):
         try:
@@ -60,7 +54,7 @@ def get_nout():
     return 1
 
 
-def create_file(temp_dir=None):
+def create_file(temp_dir):
     """
     Create a MAT file with a random name in the temp directory
 

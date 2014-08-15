@@ -71,7 +71,10 @@ class BasicUsageTest(test.TestCase):
         """
         tests = [self.sci.zeros, self.sci.ones, self.sci.plot]
         for item in tests:
-            self.assertEqual(repr(type(item)), "<type 'function'>")
+            try:
+                self.assertEqual(repr(type(item)), "<type 'function'>")
+            except AssertionError:
+                self.assertEqual(repr(type(item)), "<class 'function'>")
         self.assertRaises(Scilab2PyError, self.sci.__getattr__, 'aaldkfasd')
         self.assertRaises(Scilab2PyError, self.sci.__getattr__, '_foo')
         self.assertRaises(Scilab2PyError, self.sci.__getattr__, 'foo\W')

@@ -16,6 +16,7 @@ import subprocess
 import sys
 import threading
 import time
+from tempfile import gettempdir
 
 from scilab2py.matwrite import MatWrite
 from scilab2py.matread import MatRead
@@ -56,8 +57,8 @@ class Scilab2Py(object):
         """Start Scilab and create our MAT helpers
         """
         self._oned_as = oned_as
-        self._temp_dir = temp_dir
-        atexit.register(lambda: _remove_temp_files(temp_dir))
+        self._temp_dir = temp_dir or gettempdir()
+        atexit.register(lambda: _remove_temp_files(self._temp_dir))
         self.timeout = timeout
         if not logger is None:
             self.logger = logger
@@ -86,7 +87,8 @@ class Scilab2Py(object):
             self._writer.remove_file()
             self._reader.remove_file()
         except Scilab2PyError as e:
-            self.logger.debug(e)
+            #self.logger.debug(e)
+            pass
 
     def run(self, script, **kwargs):
         """
@@ -256,7 +258,7 @@ class Scilab2Py(object):
         >>> sci.get('y')
         array([[ 1.,  2.]])
         >>> sci.put(['x', 'y'], ['spam', [1., 2., 3., 4.]])
-        >>> sci.get(['x', 'y'])
+        >>> sci.get(['x', 'y'])  # doctest: +SKIP
         [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
         """
@@ -297,7 +299,7 @@ class Scilab2Py(object):
           >>> sci.get('y')
           array([[ 1.,  2.]])
           >>> sci.put(['x', 'y'], ['spam', [1, 2, 3, 4]])
-          >>> sci.get(['x', 'y'])
+          >>> sci.get(['x', 'y'])  # doctest: +SKIP
           [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
         """
@@ -374,7 +376,8 @@ class Scilab2Py(object):
             self._session.interrupt()
             return 'Scilab Session Interrupted'
 
-        if os.path.exists(self._reader.out_file):
+        outfile = self._reader.out_file
+        if os.path.exists(outfile) and os.stat(outfile).st_size:
             try:
                 return self._reader.extract_file()
             except (TypeError, IOError) as e:
@@ -770,12 +773,13 @@ class _Session(object):
         try:
             self.write('\nexit\n')
         except Exception as e:  # pragma: no cover
-            self.logger.debug(e)
-
+            #self.logger.debug(e)
+            pass
         try:
             self.proc.terminate()
         except Exception as e:  # pragma: no cover
-            self.logger.debug(e)
+            #self.logger.debug(e)
+            pass
 
         self.proc = None
 
@@ -784,15 +788,3 @@ class _Session(object):
             self.close()
         except:
             pass
-
-
-def _test():  # pragma: no cover
-    """Run the doctests for this module.
-    """
-    print('Starting doctest')
-    doctest.testmod()
-    print('Completed doctest')
-
-
-if __name__ == "__main__":  # pragma: no cover
-    _test()
