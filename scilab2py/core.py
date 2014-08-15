@@ -74,9 +74,9 @@ class Scilab2Py(object):
 
     def __exit__(self, type, value, traceback):
         """Close session"""
-        self.close()
+        self.exit()
 
-    def close(self):
+    def exit(self):
         """Closes this Scilab session and removes temp files
         """
         if self._session:
@@ -88,159 +88,13 @@ class Scilab2Py(object):
         except Scilab2PyError as e:
             self.logger.debug(e)
 
-    def run(self, script, **kwargs):
+    def push(self, name, var, verbose=False, timeout=-1):
         """
-        Run artibrary Scilab code.
-
-        Parameters
-        -----------
-        script : str
-            Command script to send to Scilab for execution.
-        verbose : bool, optional
-            Log Scilab output at info level.
-
-        Returns
-        -------
-        out : str
-            Scilab printed output.
-
-        Raises
-        ------
-        Scilab2PyError
-            If the script cannot be run by Scilab.
-
-        Examples
-        --------
-        >>> from scilab2py import Scilab2Py
-        >>> sci = Scilab2Py()
-        >>> sci.run('y=ones(3,3)')
-        >>> print(sci.get('y'))
-        [[ 1.  1.  1.]
-         [ 1.  1.  1.]
-         [ 1.  1.  1.]]
-        >>> sci.run('x = mean([[1, 2], [3, 4]])')
-        >>> print(sci.get('x'))
-        2.5
-
-        """
-        # don't return a value from a script
-        kwargs['nout'] = 0
-        return self.call(script, **kwargs)
-
-    def call(self, func, *inputs, **kwargs):
-        """
-        Call an Scilab function with optional arguments.
+        Put a variable or variables into the Scilab session.
 
         Parameters
         ----------
-        func : str
-            Function name to call.
-        inputs : array_like
-            Variables to pass to the function.
-        nout : int, optional
-            Number of output arguments.
-            This is set automatically based on the number of
-            return values requested (see example below).
-            You can override this behavior by passing a
-            different value.
-        verbose : bool, optional
-             Log Scilab output at info level.
-
-        Returns
-        -------
-        out : str or tuple
-            If nout > 0, returns the values from Scilab as a tuple.
-            Otherwise, returns the output displayed by Scilab.
-
-        Raises
-        ------
-        Scilab2PyError
-            If the call is unsucessful.
-
-        Examples
-        --------
-        >>> from scilab2py import Scilab2Py
-        >>> sci = Scilab2Py()
-        >>> b = sci.call('ones', 1, 2)
-        >>> print(b)
-        [[ 1.  1.]]
-        >>> x, y = 1, 2
-        >>> a = sci.call('zeros', x, y)
-        >>> a
-        array([[ 0.,  0.]])
-        >>> U, S, V = sci.call('svd', [[1, 2], [1, 3]])
-        >>> print((U, S, V))
-        (array([[-0.57604844, -0.81741556],
-               [-0.81741556,  0.57604844]]), array([[ 3.86432845,  0.        ],
-               [ 0.        ,  0.25877718]]), array([[-0.36059668, -0.93272184],
-               [-0.93272184,  0.36059668]]))
-
-        """
-        verbose = kwargs.get('verbose', False)
-        nout = kwargs.get('nout', get_nout())
-        timeout = kwargs.get('timeout', self.timeout)
-        argout_list = ['ans']
-        if '=' in func:
-            nout = 0
-
-        # handle references to script names - and paths to them
-        if func.endswith('.sci'):
-            if os.path.dirname(func):
-                self.getd(os.path.dirname(func))
-                func = os.path.basename(func)
-            else:
-                try:
-                    self.getd('.')
-                except Scilab2PyError as e:
-                    self.logger.debug(e)
-            func = func[:func.index('.')]
-
-        # these three lines will form the commands sent to Scilab
-        # load("-v6", "infile", "invar1", ...)
-        # [a, b, c] = foo(A, B, C)
-        # save("-v6", "outfile", "outvar1", ...)
-        load_line = call_line = save_line = ''
-
-        if nout:
-            # create a dummy list of var names ("a", "b", "c", ...)
-            # use ascii char codes so we can increment
-            argout_list, save_line = self._reader.setup(nout)
-            call_line = '[{0}] = '.format(', '.join(argout_list))
-        if inputs:
-            argin_list, load_line = self._writer.create_file(inputs)
-            call_line += '{0}({1})'.format(func, ', '.join(argin_list))
-        elif nout and not '(' in func:
-            # call foo() - no arguments
-            call_line += '{0}()'.format(func)
-        else:
-            # run foo
-            call_line += '{0}'.format(func)
-
-        if not call_line.endswith(')') and nout:
-            call_line += '()'
-        else:
-            call_line += ';'
-
-        # create the command and execute in Scilab
-        cmd = [load_line, call_line, save_line]
-        data = self._eval(cmd, verbose=verbose, timeout=timeout)
-        if isinstance(data, dict) and not isinstance(data, Struct):
-            data = [data.get(v, None) for v in argout_list]
-            if len(data) == 1 and data[0] is None:
-                data = None
-        if verbose:
-            self.logger.info(data)
-        else:
-            self.logger.debug(data)
-        return data
-
-    def put(self, names, var, verbose=False, timeout=-1):
-        """
-        Put a variable into the Scilab session.
-
-        Parameters
-        ----------
-        names : str or list
+        name : str or list
             Name of the variable(s).
         var : object or list
             The value(s) to pass.
@@ -252,31 +106,35 @@ class Scilab2Py(object):
         >>> from scilab2py import Scilab2Py
         >>> sci = Scilab2Py()
         >>> y = [1, 2]
-        >>> sci.put('y', y)
-        >>> sci.get('y')
+        >>> sci.push('y', y)
+        >>> sci.pull('y')
         array([[ 1.,  2.]])
-        >>> sci.put(['x', 'y'], ['spam', [1., 2., 3., 4.]])
-        >>> sci.get(['x', 'y'])  # doctest: +SKIP
+        >>> sci.push(['x', 'y'], ['spam', [1., 2., 3., 4.]])
+        >>> sci.pull(['x', 'y'])  # doctest: +SKIP
         [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
         """
-        if isinstance(names, (str, unicode)):
-            var = [var]
-            names = [names]
+        if isinstance(name, (str, unicode)):
+            vars_ = [var]
+            names = [name]
+        else:
+            vars_ = var
+            names = name
+
         for name in names:
             if name.startswith('_'):
                 raise Scilab2PyError('Invalid name {0}'.format(name))
-        _, load_line = self._writer.create_file(var, names)
+        _, load_line = self._writer.create_file(vars_, names)
         self._eval(load_line, verbose=verbose, timeout=timeout)
 
-    def get(self, var, verbose=False, timeout=-1):
+    def pull(self, var, verbose=False, timeout=-1):
         """
-        Retrieve a value from the Scilab session.
+        Retrieve a value or values from the Scilab session.
 
         Parameters
         ----------
-        var : str
-            Name of the variable to retrieve.
+        var : str or list
+            Name of the variable(s) to retrieve.
         timeout : float
             Time to wait for response from Scilab (per character).
 
@@ -293,11 +151,11 @@ class Scilab2Py(object):
           >>> from scilab2py import Scilab2Py
           >>> sci = Scilab2Py()
           >>> y = [1, 2]
-          >>> sci.put('y', y)
-          >>> sci.get('y')
+          >>> sci.push('y', y)
+          >>> sci.pull('y')
           array([[ 1.,  2.]])
-          >>> sci.put(['x', 'y'], ['spam', [1, 2, 3, 4]])
-          >>> sci.get(['x', 'y'])  # doctest: +SKIP
+          >>> sci.push(['x', 'y'], ['spam', [1, 2, 3, 4]])
+          >>> sci.pull(['x', 'y'])  # doctest: +SKIP
           [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
         """
@@ -310,16 +168,13 @@ class Scilab2Py(object):
         else:
             return data
 
-    def _eval(self, cmds, verbose=True, log=True, timeout=-1):
+    def eval(self, cmd, verbose=False, log=True, timeout=-1):
         """
-        Perform raw Scilab command.
-
-        This is a low-level command, and should not technically be used
-        directly.  The API could change. You have been warned.
+        Perform Scilab command or commands.
 
         Parameters
         ----------
-        cmds : str or list
+        cmd : str or list
             Commands(s) to pass directly to Scilab.
         verbose : bool, optional
              Log Scilab output at info level.
@@ -340,8 +195,10 @@ class Scilab2Py(object):
         if not self._session:
             raise Scilab2PyError('No Scilab Session')
 
-        if isinstance(cmds, (str, unicode)):
-            cmds = [cmds]
+        if isinstance(cmd, (str, unicode)):
+            cmds = [cmd]
+        else:
+            cmds = cmd
 
         if verbose and log:
             [self.logger.info(line) for line in cmds]
@@ -384,6 +241,17 @@ class Scilab2Py(object):
         if resp:
             return resp
 
+    def restart(self):
+        """Restart an Scilab session in a clean state
+        """
+        self._reader = MatRead(self._temp_dir)
+        self._writer = MatWrite(self._temp_dir, self._oned_as)
+        self._session = _Session(self._reader.out_file, self.logger)
+
+    # --------------------------------------------------------------
+    # Private API
+    # --------------------------------------------------------------
+
     def _make_scilab_command(self, name, doc=None):
         """Create a wrapper to an Scilab procedure or object
 
@@ -396,7 +264,7 @@ class Scilab2Py(object):
             if name == 'getd':
                 kwargs['nout'] = 0
             kwargs['verbose'] = kwargs.get('verbose', False)
-            return self.call(name, *args, **kwargs)
+            return self._call(name, *args, **kwargs)
 
         # convert to ascii for pydoc
         try:
@@ -408,6 +276,84 @@ class Scilab2Py(object):
         scilab_command.__name__ = name
 
         return scilab_command
+
+    def _call(self, func, *inputs, **kwargs):
+        """
+        Call an Scilab function with optional arguments.
+
+        This is intended to be used by Scilab2Py dynamic functions.
+
+        Parameters
+        ----------
+        func : str
+            Function name to call.
+        inputs : array_like
+            Variables to pass to the function.
+        nout : int, optional
+            Number of output arguments.
+            This is set automatically based on the number of
+            return values requested (see example below).
+            You can override this behavior by passing a
+            different value.
+        verbose : bool, optional
+             Log Scilab output at info level.
+
+        Returns
+        -------
+        out : str or tuple
+            If nout > 0, returns the values from Scilab as a tuple.
+            Otherwise, returns the output displayed by Scilab.
+
+        Raises
+        ------
+        Scilab2PyError
+            If the call is unsucessful.
+        """
+        verbose = kwargs.get('verbose', False)
+        nout = kwargs.get('nout', get_nout())
+        timeout = kwargs.get('timeout', self.timeout)
+        argout_list = ['ans']
+        if '=' in func:
+            nout = 0
+
+        # these three lines will form the commands sent to Scilab
+        # load("-v6", "infile", "invar1", ...)
+        # [a, b, c] = foo(A, B, C)
+        # save("-v6", "outfile", "outvar1", ...)
+        load_line = call_line = save_line = ''
+
+        if nout:
+            # create a dummy list of var names ("a", "b", "c", ...)
+            # use ascii char codes so we can increment
+            argout_list, save_line = self._reader.setup(nout)
+            call_line = '[{0}] = '.format(', '.join(argout_list))
+        if inputs:
+            argin_list, load_line = self._writer.create_file(inputs)
+            call_line += '{0}({1})'.format(func, ', '.join(argin_list))
+        elif nout and not '(' in func:
+            # call foo() - no arguments
+            call_line += '{0}()'.format(func)
+        else:
+            # run foo
+            call_line += '{0}'.format(func)
+
+        if not call_line.endswith(')') and nout:
+            call_line += '()'
+        else:
+            call_line += ';'
+
+        # create the command and execute in Scilab
+        cmd = [load_line, call_line, save_line]
+        data = self._eval(cmd, verbose=verbose, timeout=timeout)
+        if isinstance(data, dict) and not isinstance(data, Struct):
+            data = [data.get(v, None) for v in argout_list]
+            if len(data) == 1 and data[0] is None:
+                data = None
+        if verbose:
+            self.logger.info(data)
+        else:
+            self.logger.debug(data)
+        return data
 
     def _get_doc(self, name):
         """
@@ -489,13 +435,6 @@ class Scilab2Py(object):
         #!!! attr, *not* name, because we might have python keyword name!
         setattr(self, attr, scilab_command)
         return scilab_command
-
-    def restart(self):
-        """Restart an Scilab session in a clean state
-        """
-        self._reader = MatRead(self._temp_dir)
-        self._writer = MatWrite(self._temp_dir, self._oned_as)
-        self._session = _Session(self._reader.out_file, self.logger)
 
 
 class _Reader(object):
