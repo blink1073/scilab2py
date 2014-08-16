@@ -67,7 +67,7 @@ class SpeedCheck(object):
             avg = timeit.timeit(self.large_array_get, number=nruns) / nruns
             print('    {0:0.01f} msec'.format(avg * 1e3))
 
-        self.scilab.close()
+        self.scilab.exit()
         print('*' * 20)
         print('Test complete!')
 

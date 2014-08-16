@@ -40,7 +40,7 @@ class ThreadClass(threading.Thread):
         return
 
 
-def thread_test(nthreads=3):
+def thread_check(nthreads=3):
     """
     Start a number of threads and verify each has a unique Scilab2Py session.
 
