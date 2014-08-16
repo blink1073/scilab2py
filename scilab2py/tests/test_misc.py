@@ -84,6 +84,10 @@ class MiscTests(test.TestCase):
         from scilab2py import thread_test
         thread_test()
 
+    def test_speed_check(self):
+        from scilab2py import speed_check
+        speed_check()
+
     def test_plot(self):
         self.sci.figure()
         self.sci.plot([1, 2, 3])

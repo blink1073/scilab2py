@@ -29,17 +29,17 @@ class SpeedCheck(object):
     def raw_speed(self):
         """Run a fast matlab command and see how long it takes.
         """
-        self.scilab.run("x = 1")
+        self.scilab.eval("x = 1")
 
     def large_array_put(self):
         """Create a large matrix and load it into the Scilab session.
         """
-        self.scilab.put('x', self.array)
+        self.scilab.push('x', self.array)
 
     def large_array_get(self):
         """Retrieve the large matrix from the scilab session
         """
-        self.scilab.get('x')
+        self.scilab.pull('x')
 
     def run(self):
         """Perform the Scilab2Py speed analysis.
@@ -72,7 +72,7 @@ class SpeedCheck(object):
         print('Test complete!')
 
 
-def speed_test():
+def speed_check():
     """Checks the speed penalty of the Python to Scilab bridge.
 
     Uses timeit to test the raw execution of a Scliab command,
@@ -84,4 +84,4 @@ def speed_test():
 
 
 if __name__ == '__main__':
-    speed_test()
+    speed_check()
