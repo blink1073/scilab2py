@@ -30,7 +30,11 @@ import imp
 import functools
 import os
 import ctypes
-import thread
+
+try:
+    import thread
+except ImportError:
+    import _thread as thread
 
 
 if os.name == 'nt':
