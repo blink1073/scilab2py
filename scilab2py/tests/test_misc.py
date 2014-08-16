@@ -81,17 +81,23 @@ class MiscTests(test.TestCase):
         _remove_temp_files(self.sci._temp_dir)
 
     def test_threads(self):
-        from scilab2py import thread_test
-        thread_test()
+        from scilab2py import thread_check
+        try:
+            thread_check()
+        except TypeError:
+            thread_check.thread_check()
 
     def test_speed_check(self):
         from scilab2py import speed_check
-        speed_check()
+        try:
+            speed_check()
+        except TypeError:
+            speed_check.speed_check()
 
     def test_plot(self):
         self.sci.figure()
         self.sci.plot([1, 2, 3])
-        self.sci.close_()
+        self.sci.close()
 
     def test_help(self):
         help(self.sci)
