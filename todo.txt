@@ -1,4 +1,2 @@
 
-
-add inline plotting to scilab kernel
-test on Windows
+add inline plotting toggle for scilabmagic

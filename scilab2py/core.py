@@ -671,8 +671,8 @@ class _Session(object):
                     return val
             time.sleep(1e-6)
             if (time.time() - t0) > self.timeout:
-                self.close()
-                raise Scilab2PyError('Session Timed Out, closing')
+                self.interrupt()
+                raise Scilab2PyError('Timed Out, interrupting')
 
     def write(self, message):
         """Write a message to the process using utf-8 encoding"""
