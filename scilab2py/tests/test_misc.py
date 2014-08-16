@@ -11,7 +11,7 @@ from scilab2py import Scilab2Py, Scilab2PyError, get_log, scilab
 from scilab2py.compat import StringIO
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-scilab.close()
+scilab.exit()
 
 
 class MiscTests(test.TestCase):
@@ -21,7 +21,7 @@ class MiscTests(test.TestCase):
         self.sci.getd(THIS_DIR)
 
     def tearDown(self):
-        self.sci.close()
+        self.sci.exit()
 
     def test_unicode_docstring(self):
         '''Make sure unicode docstrings in Scilab functions work'''
@@ -98,8 +98,8 @@ class MiscTests(test.TestCase):
 
     def test_using_closed_session(self):
         with Scilab2Py() as sci:
-            sci.close()
-            test.assert_raises(Scilab2PyError, sci.call, 'ones')
+            sci.exit()
+            test.assert_raises(Scilab2PyError, sci.eval, 'ones')
 
     def test_pause(self):
         self.assertRaises(Scilab2PyError,
@@ -114,7 +114,7 @@ class MiscTests(test.TestCase):
         assert THIS_DIR in self.sci.test_nodocstring.__doc__
 
     def test_func_noexist(self):
-        test.assert_raises(Scilab2PyError, self.sci.call, 'Scilab2Py_dummy')
+        test.assert_raises(Scilab2PyError, self.sci.eval, 'Scilab2Py_dummy')
 
     def test_timeout(self):
         with Scilab2Py(timeout=2) as sci:
@@ -124,34 +124,29 @@ class MiscTests(test.TestCase):
     def test_call_path(self):
         with Scilab2Py() as sci:
             sci.getd(THIS_DIR)
-            DATA = sci.call('test_datatypes.sci')
-        assert DATA.string.basic == 'spam'
-
-        with Scilab2Py() as sci:
-            path = os.path.join(THIS_DIR, 'test_datatypes.sci')
-            DATA = sci.call(path)
+            DATA = sci.test_datatypes()
         assert DATA.string.basic == 'spam'
 
     def test_long_variable_name(self):
         name = 'this_variable_name_is_over_32_char'
-        self.sci.put(name, 1)
-        x = self.sci.get(name)
+        self.sci.push(name, 1)
+        x = self.sci.pull(name)
         assert x == 1
 
     def test_syntax_error_embedded(self):
-        test.assert_raises(Scilab2PyError, self.sci._eval, "a='1")
-        self.sci.put('b', 1)
-        x = self.sci.get('b')
+        test.assert_raises(Scilab2PyError, self.sci.eval, "a='1")
+        self.sci.push('b', 1)
+        x = self.sci.pull('b')
         assert x == 1
 
     def test_oned_as(self):
         x = np.ones(10)
-        self.sci.put('x', x)
-        assert self.sci.get('x').shape == x[:, np.newaxis].T.shape
+        self.sci.push('x', x)
+        assert self.sci.pull('x').shape == x[:, np.newaxis].T.shape
         sci = Scilab2Py(oned_as='column')
-        sci.put('x', x)
-        assert sci.get('x').shape == x[:, np.newaxis].shape
-        sci.close()
+        sci.push('x', x)
+        assert sci.pull('x').shape == x[:, np.newaxis].shape
+        sci.exit()
 
     @skipif(not hasattr(signal, 'alarm'))
     def test_interrupt(self):
@@ -162,10 +157,10 @@ class MiscTests(test.TestCase):
         signal.signal(signal.SIGALRM, receive_signal)
 
         signal.alarm(10)
-        self.sci.run("xpause(20e6);kladjflsd")
+        self.sci.eval("xpause(20e6);kladjflsd")
 
-        self.sci.put('c', 10)
-        x = self.sci.get('c')
+        self.sci.push('c', 10)
+        x = self.sci.pull('c')
         assert x == 10
 
     def test_clear(self):
@@ -173,5 +168,5 @@ class MiscTests(test.TestCase):
         self.sci.clear()
 
     def test_prev_ans(self):
-        self.sci._eval("5")
-        assert self.sci._eval('_') == 5
+        self.sci.eval("5")
+        assert self.sci.eval('_') == 5

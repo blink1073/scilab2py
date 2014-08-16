@@ -8,7 +8,7 @@ from scilab2py import Scilab2Py, scilab
 
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-scilab.close()
+scilab.exit()
 
 
 class NumpyTest(test.TestCase):
@@ -25,7 +25,7 @@ class NumpyTest(test.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.sci.close()
+        cls.sci.exit()
 
     def test_scalars(self):
         """Send scalar numpy types and make sure we get the same number back.
@@ -129,11 +129,11 @@ class NumpyTest(test.TestCase):
         """
         x = np.NaN
         y = np.inf
-        self.sci.put('x', x)
-        self.sci.put('y', y)
-        assert np.isnan(self.sci.get('x'))
-        assert np.isinf(self.sci.get('y'))
-        self.sci.run('a = %nan')
-        self.sci.run('b= %inf')
-        assert np.isnan(self.sci.get('a'))
-        assert np.isinf(self.sci.get('b'))
+        self.sci.push('x', x)
+        self.sci.push('y', y)
+        assert np.isnan(self.sci.pull('x'))
+        assert np.isinf(self.sci.pull('y'))
+        self.sci.eval('a = %nan')
+        self.sci.eval('b= %inf')
+        assert np.isnan(self.sci.pull('a'))
+        assert np.isinf(self.sci.pull('b'))

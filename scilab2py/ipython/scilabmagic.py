@@ -114,7 +114,7 @@ class ScilabMagics(Magics):
         inputs = line.split(' ')
         for input in inputs:
             input = unicode_to_str(input)
-            self._sci.put(input, self.shell.user_ns[input])
+            self._sci.push(input, self.shell.user_ns[input])
 
     @skip_doctest
     @line_magic
@@ -140,7 +140,7 @@ class ScilabMagics(Magics):
         outputs = line.split(' ')
         for output in outputs:
             output = unicode_to_str(output)
-            self.shell.push({output: self._sci.get(output)})
+            self.shell.push({output: self._sci.pull(output)})
 
     @skip_doctest
     @magic_arguments()
@@ -240,7 +240,7 @@ class ScilabMagics(Magics):
                     val = local_ns[input]
                 except KeyError:
                     val = self.shell.user_ns[input]
-                self._sci.put(input, val)
+                self._sci.push(input, val)
 
         # generate plots in a temporary directory
         plot_dir = tempfile.mkdtemp().replace('\\', '/')
@@ -279,7 +279,7 @@ class ScilabMagics(Magics):
         code = ' '.join((pre_call, code)).strip()
 
         try:
-            resp = self._sci.run(code, verbose=False)
+            resp = self._sci.eval(code, verbose=False)
         except (scilab2py.Scilab2PyError) as exception:
             msg = str(exception)
             if 'Scilab Syntax Error' in msg:
@@ -307,7 +307,7 @@ class ScilabMagics(Magics):
         if args.output:
             for output in ','.join(args.output).split(','):
                 output = unicode_to_str(output)
-                self.shell.push({output: self._sci.get(output)})
+                self.shell.push({output: self._sci.pull(output)})
 
         for source, data in display_data:
             # source is deprecated in IPython 3.0.

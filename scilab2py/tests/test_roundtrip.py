@@ -8,7 +8,7 @@ from scilab2py import Scilab2Py, scilab
 from scilab2py.compat import unicode
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-scilab.close()
+scilab.exit()
 
 
 class IncomingTest(test.TestCase):
@@ -103,7 +103,7 @@ class RoundtripTest(test.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.sci.close()
+        cls.sci.exit()
 
     def nested_equal(self, val1, val2):
         """Test for equality in a nested list or ndarray
@@ -177,13 +177,12 @@ class RoundtripTest(test.TestCase):
         """
         for key in ['array']:
             self.helper(self.data.cell[key])
-        #self.helper(DATA.cell['array'], np.ndarray)
 
     def test_scilab_origin(self):
         '''Test all of the types, originating in scilab, and returning
         '''
-        self.sci.run('x = test_datatypes()')
-        self.sci.put('y', self.data)
+        self.sci.eval('x = test_datatypes()')
+        self.sci.push('y', self.data)
 
         for key in self.data.keys():
             if isinstance(self.data[key], dict):
@@ -191,9 +190,9 @@ class RoundtripTest(test.TestCase):
                     if subkey == 'int':
                         continue
                     cmd = 'isequal(x.{0}.{1},y.{0}.{1})'.format(key, subkey)
-                    if np.all(self.sci.run(cmd)) == 0:
+                    if self.sci.eval(cmd) == 0:
                         assert False
                 continue
             else:
                 cmd = 'isequal(x.{0},y.{0})'.format(key)
-                assert self.sci.run(cmd)
+                assert self.sci.eval(cmd)

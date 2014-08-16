@@ -30,25 +30,23 @@ def demo(delay=2, interactive=True):
     # plotting
     sci.plot([1,2,3],'-o')
     raw_input('Press Enter to continue...')
-    sci.close_()
+    sci.close()
     xx = np.arange(-2*np.pi, 2*np.pi, 0.2)
     sci.surf(np.subtract.outer(np.sin(xx), np.cos(xx)))
     raw_input('Press Enter to continue...')
-    sci.close_()
+    sci.close()
     # single vs. multiple return values
     print(sci.svd(np.array([[1,2], [1,3]])))
     U, S, V = sci.svd([[1,2], [1,3]])
     print(U, S, V)
     # low level constructs
-    sci.run("y=ones(3,3)")
-    print(sci.get("y"))
-    sci.run("x=zeros(3,3)", verbose=True)
-    x = sci.call('rand', 1, 4)
-    print(x)
-    t = sci.call('rand', 1, 2, verbose=True)
+    sci.eval("y=ones(3,3)")
+    print(sci.pull("y"))
+    sci.eval("x=zeros(3,3)", verbose=True)
+    t = sci.eval('rand(1, 2)')
     y = np.zeros((3,3))
-    sci.put('y', y)
-    print(sci.get('y'))
+    sci.push('y', y)
+    print(sci.pull('y'))
     from scilab2py import Struct
     y = Struct()
     y.b = 'spam'

@@ -9,7 +9,7 @@ from scilab2py import Scilab2Py, scilab
 from scilab2py.compat import unicode, long
 
 
-scilab.close()
+scilab.exit()
 
 TYPE_CONVERSIONS = [
     (int, 'constant', np.float64),
@@ -53,7 +53,7 @@ class ConversionsTest(test.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.sci.close()
+        cls.sci.exit()
 
     def helper(self, outgoing, incoming=None, expected_type=None):
         """

@@ -3,12 +3,10 @@
 Information
 ******************
 
-Using Script Files
-==================
-There are several ways to use a script file in Scilab2Py.  First, you can either
-call the script using the full path to it, or `getd` for the directory
-containing the script.  When using `getd`, you can use `run`, `call`,
-or the magic method to call the function.
+Dynamic Functions
+=================
+ScilabPy will create methods for you on the fly, which correspond to Scilab
+functions.  For example:
 
 .. code-block:: python
 
@@ -19,20 +17,6 @@ or the magic method to call the function.
     >>> scilab.call('myscript.sci')
     >>> scilab.myscript()
 
-
-Interactivity
-=============
-ScilabPy will create methods for you on the fly, which correspond to Scilab
-functions.  For example:
-
-.. code-block:: python
-
-    >>> from scilab2py import scilab
-    >>> scilab.ones(3)
-    array([[ 1.,  1.,  1.],
-       [ 1.,  1.,  1.],
-       [ 1.,  1.,  1.]])
-
 Additionally, you can look up the documentation for one of these methods using
 `help`, which will launch the Scilab Help Browser.
 
@@ -42,20 +26,22 @@ Additionally, you can look up the documentation for one of these methods using
     >>> scilab.help('ones')
 
 
+Interactivity
+=============
 Scilab2Py supports code completion in IPython, so once you have created a method,
 you can recall it on the fly, so scilab.one<TAB> would give you ones.
 Structs (mentioned below) also support code completion for attributes.
 
-You can share data with an Scilab session explicitly using the `put` and
-`get` methods.  When using other Scilab2Py methods, the variable names in Scilab
+You can share data with an Scilab session explicitly using the `push` and
+`pull` methods.  When using other Scilab2Py methods, the variable names in Scilab
 start with underscores because they are temporary.  Note that integer values in python
 are converted to floats prior to sending to Scilab.
 
 .. code-block:: python
 
     >>> from scilab2py import scilab
-    >>> scilab.put('a', 1)
-    >>> scilab.get('a')
+    >>> scilab.push('a', 1)
+    >>> scilab.pull('a')
     1.0
 
 
@@ -85,14 +71,14 @@ logged at the INFO level, otherwise they are logged at the DEBUG level.
 Shadowed Function Names
 =======================
 If you'd like to call an Scilab function that is also an Scilab2Py method,
-you must add a trailing underscore. Only the `close` and `run` functions are affected.
+you must add a trailing underscore. Only the `exit` and `eval` functions are affected.
 For example:
 
 .. code-block:: python
 
     >>> from scilab2py import scilab
-    >>> scilab.figure()
-    >>> scilab.close_()
+    >>> scilab.eval_('2>1')
+    1.0
 
 
 Timeout

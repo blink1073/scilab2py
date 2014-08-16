@@ -28,8 +28,8 @@ class ThreadClass(threading.Thread):
         """
         scilab = Scilab2Py()
         # write the same variable name in each thread and read it back
-        scilab.put('name', self.getName())
-        name = scilab.get('name')
+        scilab.push('name', self.getName())
+        name = scilab.pull('name')
         now = datetime.datetime.now()
         print("{0} got '{1}' at {2}".format(self.getName(), name, now))
         scilab.close()

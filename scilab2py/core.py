@@ -125,7 +125,7 @@ class Scilab2Py(object):
             if name.startswith('_'):
                 raise Scilab2PyError('Invalid name {0}'.format(name))
         _, load_line = self._writer.create_file(vars_, names)
-        self._eval(load_line, verbose=verbose, timeout=timeout)
+        self.eval(load_line, verbose=verbose, timeout=timeout)
 
     def pull(self, var, verbose=False, timeout=-1):
         """
@@ -162,7 +162,7 @@ class Scilab2Py(object):
         if isinstance(var, (str, unicode)):
             var = [var]
         argout_list, save_line = self._reader.setup(len(var), var)
-        data = self._eval(save_line, verbose=verbose, timeout=timeout)
+        data = self.eval(save_line, verbose=verbose, timeout=timeout)
         if isinstance(data, dict) and not isinstance(data, Struct):
             return [data.get(v, None) for v in argout_list]
         else:
@@ -344,7 +344,7 @@ class Scilab2Py(object):
 
         # create the command and execute in Scilab
         cmd = [load_line, call_line, save_line]
-        data = self._eval(cmd, verbose=verbose, timeout=timeout)
+        data = self.eval(cmd, verbose=verbose, timeout=timeout)
         if isinstance(data, dict) and not isinstance(data, Struct):
             data = [data.get(v, None) for v in argout_list]
             if len(data) == 1 and data[0] is None:
@@ -375,7 +375,7 @@ class Scilab2Py(object):
            If the procedure or object does not exist.
 
         """
-        exists = self._eval('exists("{0}")'.format(name), log=False,
+        exists = self.eval('exists("{0}")'.format(name), log=False,
                             verbose=False)
         if exists == 0 and not name == 'help':
             msg = 'Name: "%s" does not exist on the Scilab session path'
@@ -384,7 +384,7 @@ class Scilab2Py(object):
         doc = "No documentation available for `%s`" % name
 
         try:
-            typeof = self._eval('typeof(%s);' % name)
+            typeof = self.eval('typeof(%s);' % name)
 
         except Scilab2PyError:
             raise Scilab2PyError('No function named `%s`' % name)
@@ -394,7 +394,7 @@ class Scilab2Py(object):
             doc += """\nUse run("help %s") for full docs.""" % name
 
         elif typeof == 'function':
-            lines = self._eval('fun2string(%s);' % name)
+            lines = self.eval('fun2string(%s);' % name)
             lines = lines.replace('!', ' ').splitlines()
 
             docs = [lines[0].replace('ans(', '%s(' % name), ' ']
