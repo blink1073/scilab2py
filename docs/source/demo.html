@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Demo &mdash; Scilab2Py 0.1 documentation</title>
+    <title>Demo &mdash; Scilab2Py 0.2 documentation</title>
     
     <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -28,7 +28,7 @@
     <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-3.1.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Scilab2Py 0.1 documentation" href="../index.html" />
+    <link rel="top" title="Scilab2Py 0.2 documentation" href="../index.html" />
     <link rel="next" title="Examples" href="examples.html" />
     <link rel="prev" title="Installation" href="installation.html" />
 <meta charset='utf-8'>
@@ -53,7 +53,7 @@
         </button>
         <a class="navbar-brand" href="../index.html">
           Scilab2Py</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.2</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -149,42 +149,6 @@
 <p>Output of Scliab2Py demo script, showing most of the features of the library.  Note that the two
 plot commands will generate an interactive plot in the actual demo.
 To run interactively:</p>
-<dl class="docutils">
-<dt>mport numpy as np</dt>
-<dd>from scilab2py import Scilab2Py
-sci = Scilab2Py()
-# basic commands
-print(sci.abs(-1))
-print(sci.ones(3, 3))
-# plotting
-sci.plot([1,2,3],&#8217;-o&#8217;)
-raw_input(&#8216;Press Enter to continue...&#8217;)
-sci.close_()
-xx = np.arange(-2*np.pi, 2*np.pi, 0.2)
-sci.surf(np.subtract.outer(np.sin(xx), np.cos(xx)))
-raw_input(&#8216;Press Enter to continue...&#8217;)
-sci.close_()
-# single vs. multiple return values
-print(sci.svd(np.array([[1,2], [1,3]])))
-U, S, V = sci.svd([[1,2], [1,3]])
-print(U, S, V)
-# low level constructs
-sci.run(&#8220;y=ones(3,3)&#8221;)
-print(sci.get(&#8220;y&#8221;))
-sci.run(&#8220;x=zeros(3,3)&#8221;, verbose=True)
-x = sci.call(&#8216;rand&#8217;, 1, 4)
-print(x)
-t = sci.call(&#8216;rand&#8217;, 1, 2, verbose=True)
-y = np.zeros((3,3))
-sci.put(&#8216;y&#8217;, y)
-print(sci.get(&#8216;y&#8217;))
-from scilab2py import Struct
-y = Struct()
-y.b = &#8216;spam&#8217;
-y.c.d = &#8216;eggs&#8217;
-print(y.c[&#8216;d&#8217;])
-print(y)</dd>
-</dl>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">scilab2py</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">scilab2py</span><span class="o">.</span><span class="n">demo</span><span class="p">()</span>
 
@@ -205,14 +169,15 @@ print(y)</dd>
 </pre></div>
 </div>
 <img alt="../_images/plot.png" src="../_images/plot.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sci</span><span class="o">.</span><span class="n">close_</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sci</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sci</span><span class="o">.</span><span class="n">surf</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">xx</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">xx</span><span class="p">)))</span>
 <span class="go">Press Enter to continue...</span>
 </pre></div>
 </div>
 <img alt="../_images/surf.png" src="../_images/surf.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># single vs. multiple return values</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sci</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># single vs. multiple return values</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">sci</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]])))</span>
 <span class="go">[[ 3.86432845]</span>
 <span class="go"> [ 0.25877718]]</span>
@@ -223,19 +188,16 @@ print(y)</dd>
 <span class="go"> [ 0.          0.25877718]] [[-0.36059668 -0.93272184]</span>
 <span class="go"> [-0.93272184  0.36059668]]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c"># low level constructs</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sci</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s">&quot;y=ones(3,3)&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">sci</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;y&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sci</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="s">&quot;y=ones(3,3)&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">sci</span><span class="o">.</span><span class="n">pull</span><span class="p">(</span><span class="s">&quot;y&quot;</span><span class="p">))</span>
 <span class="go">[[ 1.  1.  1.]</span>
 <span class="go"> [ 1.  1.  1.]</span>
 <span class="go"> [ 1.  1.  1.]]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sci</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s">&quot;x=zeros(3,3)&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">sci</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s">&#39;rand&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="go">[[  2.11324865e-01   7.56043854e-01   2.21134629e-04   3.30327092e-01]]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">sci</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s">&#39;rand&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sci</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="s">&quot;x=zeros(3,3)&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">sci</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="s">&#39;rand(1, 2)&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sci</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">sci</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sci</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">sci</span><span class="o">.</span><span class="n">pull</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">))</span>
 <span class="go">[[ 0.  0.  0.]</span>
 <span class="go"> [ 0.  0.  0.]</span>
 <span class="go"> [ 0.  0.  0.]]</span>
@@ -252,10 +214,6 @@ print(y)</dd>
 </pre></div>
 </div>
 <img alt="../_images/help.png" src="../_images/help.png" />
-<div class="highlight-python"><div class="highlight"><pre>********************
-DEMO COMPLETE!
-</pre></div>
-</div>
 </div>
 
 

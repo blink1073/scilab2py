@@ -56,9 +56,6 @@ Python Session
    >>> import numpy as np
    >>> x = np.array([[1, 2], [3, 4]], dtype=float)
    >>> out, oclass = scilab.roundtrip(x)
-   >>> # or scilab.call('roundtrip', x)
-   >>> # or scilab.call('roundtrip.m', x)
-   >>> # or scilab.call('/path/to/roundtrip.m', x)
    >>> import pprint
    >>> pprint.pprint([x, x.dtype, out, oclass, out.dtype])
   [array([[ 1.,  2.],
