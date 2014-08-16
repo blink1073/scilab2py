@@ -16,6 +16,7 @@ import sys
 import threading
 import time
 from tempfile import gettempdir
+import ctypes
 
 from scilab2py.matwrite import MatWrite
 from scilab2py.matread import MatRead
@@ -228,7 +229,9 @@ class Scilab2Py(object):
             resp = self._session.evaluate(cmds, verbose, log, self.logger,
                                           timeout=timeout)
         except KeyboardInterrupt:
-            self._session.interrupt()
+            if os.name == 'nt':
+                self.restart()
+                raise Scilab2PyError('Session Interrupted, Restarting')
             return 'Scilab Session Interrupted'
 
         outfile = self._reader.out_file
@@ -377,9 +380,10 @@ class Scilab2Py(object):
         """
         exists = self.eval('exists("{0}")'.format(name), log=False,
                            verbose=False)
-        if exists == 0 and not name == 'help':
-            msg = 'Name: "%s" does not exist on the Scilab session path'
-            raise Scilab2PyError(msg % name)
+
+        msg = 'Name: "%s" does not exist on the Scilab session path' % name
+        if str(exists) == '0.0' and not name == 'help':
+            raise Scilab2PyError(msg)
 
         doc = "No documentation available for `%s`" % name
 
@@ -521,6 +525,7 @@ class _Session(object):
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             kwargs['startupinfo'] = startupinfo
+            kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
             proc_name = 'Scilex'
         try:
             proc = subprocess.Popen([proc_name, '-nw'],
@@ -641,7 +646,11 @@ class _Session(object):
         return '\n'.join(resp).rstrip()
 
     def interrupt(self):
-        self.proc.send_signal(signal.SIGINT)
+        if not os.name == 'nt':
+            self.proc.send_signal(signal.SIGINT)
+        else:
+            self.start_subprocess()
+            raise Scilab2PyError('Session Interrupted, restarting')
 
     def expect(self, strings):
         """Look for a string or strings in the incoming data"""
