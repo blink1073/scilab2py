@@ -25,17 +25,19 @@ test:
 cover:
 	make clean
 	pip install nose-cov coveralls doctest-ignore-unicode
-	nosetests $(TEST_ARGS) --with-cov --cov scilab2py && coveralls
+	nosetests $(TEST_ARGS) --with-cov --cov scilab2py
+	coveralls
 	coverage annotate
 
 release:
-	make clean
+	make cover
+	make gh-pages
 	pip install wheel
 	python setup.py register
 	python setup.py bdist_wheel upload
 	python setup.py sdist --formats=gztar,zip upload
-	echo "*** Do not forget to add a tag"
-	echo "*** Do not forget to 'make gh-pages'"
+	git tag v`python -c "import scilab2py;print(scilab2py.__version__)"`
+	git push origin master --all
 
 gh-pages:
 	pip install sphinx-bootstrap-theme numpydoc sphinx
