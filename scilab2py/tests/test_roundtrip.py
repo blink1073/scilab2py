@@ -7,11 +7,12 @@ import numpy.testing as test
 from scilab2py import Scilab2Py, scilab
 from scilab2py.compat import unicode
 
-THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+THIS_DIR = os.path.abspath(os.path.dirname(__file__)).replace('\\', '/')
 scilab.exit()
 
 
 class IncomingTest(test.TestCase):
+
     """Test the importing of all Scilab data types, checking their type
 
     Uses test_datatypes.sci to read in a dictionary with all Scilab types
@@ -88,6 +89,7 @@ class IncomingTest(test.TestCase):
 
 
 class RoundtripTest(test.TestCase):
+
     """Test roundtrip value and type preservation between Python and Scilab.
 
     Uses test_datatypes.sci to read in a dictionary with all Scilab types
@@ -190,8 +192,7 @@ class RoundtripTest(test.TestCase):
                     if subkey == 'int':
                         continue
                     cmd = 'isequal(x.{0}.{1},y.{0}.{1})'.format(key, subkey)
-                    if self.sci.eval(cmd) == 0:
-                        assert False
+                    assert str( self.sci.eval(cmd)) != '0.0'
                 continue
             else:
                 cmd = 'isequal(x.{0},y.{0})'.format(key)

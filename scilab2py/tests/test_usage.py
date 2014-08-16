@@ -52,8 +52,6 @@ class BasicUsageTest(test.TestCase):
         self.assertRaises(Scilab2PyError, self.sci.eval, '_spam')
 
     def test_push_pull(self):
-        """Test putting and getting values
-        """
         self.sci.push('spam', [1, 2])
         out = self.sci.pull('spam')
         assert np.allclose(out, np.array([1, 2]))

@@ -1,11 +1,12 @@
 from __future__ import absolute_import, print_function
 import logging
 import os
-import signal
+import threading
+import time
+import thread
 
 import numpy as np
 import numpy.testing as test
-from numpy.testing.decorators import skipif
 
 from scilab2py import Scilab2Py, Scilab2PyError, get_log, scilab
 from scilab2py.compat import StringIO
@@ -60,7 +61,7 @@ class MiscTests(test.TestCase):
         sci2.ones(1, verbose=True)
         sci2.logger.setLevel(logging.DEBUG)
         sci2.zeros(1)
-        sci2.close()
+        sci2.exit()
 
         # check the output
         lines = hdlr.stream.getvalue().strip().split('\n')
@@ -158,20 +159,31 @@ class MiscTests(test.TestCase):
         assert sci.pull('x').shape == x[:, np.newaxis].shape
         sci.exit()
 
-    @skipif(not hasattr(signal, 'alarm'))
     def test_interrupt(self):
 
-        def receive_signal(signum, stack):
-            raise KeyboardInterrupt
+        def action():
+            time.sleep(1.0)
+            thread.interrupt_main()
 
-        signal.signal(signal.SIGALRM, receive_signal)
+        interrupter = threading.Thread(target=action)
+        interrupter.start()
 
-        signal.alarm(10)
-        self.sci.eval("xpause(20e6);kladjflsd")
+        self.sci.push('a', 10)
 
-        self.sci.push('c', 10)
-        x = self.sci.pull('c')
-        assert x == 10
+        try:
+            self.sci.eval("for i=1:30; xpause(1e6); end; kladjflsd")
+        except Scilab2PyError as e:
+            if 'Session Interrupted' in str(e):
+                pass
+            else:
+                raise Scilab2PyError(e)
+
+        if os.name == 'nt':
+            self.assertRaises(Scilab2PyError, self.sci.pull, 'a')
+            self.sci.push('c', 10)
+            assert self.sci.pull('c') == 10
+        else:
+            assert self.sci.pull('a') == 10
 
     def test_clear(self):
         """Make sure clearing variables does not mess anything up."""

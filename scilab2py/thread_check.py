@@ -32,7 +32,7 @@ class ThreadClass(threading.Thread):
         name = scilab.pull('name')
         now = datetime.datetime.now()
         print("{0} got '{1}' at {2}".format(self.getName(), name, now))
-        scilab.close()
+        scilab.exit()
         try:
             assert self.getName() == name
         except AssertionError:  # pragma: no cover

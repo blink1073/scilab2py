@@ -11,10 +11,7 @@ functions.  For example:
 .. code-block:: python
 
     >>> from scilab2py import scilab
-    >>> scilab.call('/path/to/myscript.sci')
     >>> scilab.getd('/path/to/')
-    >>> scilab.run('myscript')
-    >>> scilab.call('myscript.sci')
     >>> scilab.myscript()
 
 Additionally, you can look up the documentation for one of these methods using
@@ -103,7 +100,8 @@ timeout.
 
 Interruption
 ===============
-Scilab2Py will catch a Keyboard Interrupt and interrupt the current Scilab command.
+Scilab2Py will catch a Keyboard Interrupt and interrupt the current Scilab command unless you
+are on Windows, where it will restart the Scilab session.
 
 
 Context Manager
