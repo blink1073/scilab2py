@@ -376,7 +376,7 @@ class Scilab2Py(object):
 
         """
         exists = self.eval('exists("{0}")'.format(name), log=False,
-                            verbose=False)
+                           verbose=False)
         if exists == 0 and not name == 'help':
             msg = 'Name: "%s" does not exist on the Scilab session path'
             raise Scilab2PyError(msg % name)
@@ -391,7 +391,6 @@ class Scilab2Py(object):
 
         if typeof == 'fptr':
             doc = "`%s` is a built-in Scilab function." % name
-            doc += """\nUse run("help %s") for full docs.""" % name
 
         elif typeof == 'function':
             lines = self.eval('fun2string(%s);' % name)
