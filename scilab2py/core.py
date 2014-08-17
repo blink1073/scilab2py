@@ -16,7 +16,6 @@ import sys
 import threading
 import time
 from tempfile import gettempdir
-import ctypes
 
 from scilab2py.matwrite import MatWrite
 from scilab2py.matread import MatRead
@@ -282,39 +281,35 @@ class Scilab2Py(object):
 
     def _call(self, func, *inputs, **kwargs):
         """
-        Call an Scilab function with optional arguments.
-
-        This is intended to be used by Scilab2Py dynamic functions.
-
-        Parameters
+        Scilab2Py Parameters
         ----------
-        func : str
-            Function name to call.
         inputs : array_like
             Variables to pass to the function.
         nout : int, optional
             Number of output arguments.
             This is set automatically based on the number of
-            return values requested (see example below).
+            return values requested.
             You can override this behavior by passing a
             different value.
         verbose : bool, optional
              Log Scilab output at info level.
+        kwargs : dictionary, optional
+            Key - value pairs to be passed as prop - value inputs to the
+            function.  The values must be strings or numbers.
 
         Returns
         -------
-        out : str or tuple
-            If nout > 0, returns the values from Scilab as a tuple.
-            Otherwise, returns the output displayed by Scilab.
+        out : value
+            Value returned by the function.
 
         Raises
         ------
         Scilab2PyError
-            If the call is unsucessful.
+            If the function call is unsucessful.
         """
-        verbose = kwargs.get('verbose', False)
-        nout = kwargs.get('nout', get_nout())
-        timeout = kwargs.get('timeout', self.timeout)
+        verbose = kwargs.pop('verbose', False)
+        nout = kwargs.pop('nout', get_nout())
+        timeout = kwargs.pop('timeout', self.timeout)
         argout_list = ['ans']
         if '=' in func:
             nout = 0
@@ -325,37 +320,42 @@ class Scilab2Py(object):
         # save("-v6", "outfile", "outvar1", ...)
         load_line = call_line = save_line = ''
 
+        prop_vals = []
+        for (key, value) in kwargs.items():
+            if isinstance(value, (str, unicode, int, float)):
+                prop_vals.append('"%s", %s' % (key, repr(value)))
+            else:
+                msg = 'Keyword arguments must be a string or number: '
+                msg += '%s = %s' % (key, value)
+                raise Scilab2PyError(msg)
+        prop_vals = ', '.join(prop_vals)
+
+        call_line += func + '('
+
         if nout:
             # create a dummy list of var names ("a", "b", "c", ...)
             # use ascii char codes so we can increment
             argout_list, save_line = self._reader.setup(nout)
             call_line = '[{0}] = '.format(', '.join(argout_list))
+
         if inputs:
             argin_list, load_line = self._writer.create_file(inputs)
-            call_line += '{0}({1})'.format(func, ', '.join(argin_list))
-        elif nout and not '(' in func:
-            # call foo() - no arguments
-            call_line += '{0}()'.format(func)
-        else:
-            # run foo
-            call_line += '{0}'.format(func)
+            call_line += ', '.join(argin_list)
 
-        if not call_line.endswith(')') and nout:
-            call_line += '()'
-        else:
-            call_line += ';'
+        if prop_vals:
+            call_line += ', ' + prop_vals
 
-        # create the command and execute in Scilab
+        call_line += ')'
+
+        # create the command and execute in octave
         cmd = [load_line, call_line, save_line]
         data = self.eval(cmd, verbose=verbose, timeout=timeout)
+
         if isinstance(data, dict) and not isinstance(data, Struct):
             data = [data.get(v, None) for v in argout_list]
             if len(data) == 1 and data[0] is None:
-                data = None
-        if verbose:
-            self.logger.info(data)
-        else:
-            self.logger.debug(data)
+                    data = None
+
         return data
 
     def _get_doc(self, name):
@@ -414,6 +414,9 @@ class Scilab2Py(object):
                     break
 
             doc = '\n'.join(docs)
+
+        default = self._call.__doc__
+        doc += '\n' + '\n'.join([line[8:] for line in default.splitlines()])
 
         return doc
 
