@@ -17,7 +17,7 @@ before_install:
   - wget http://www.scilab.org/download/5.5.0/scilab-5.5.0.bin.linux-x86_64.tar.gz -O scilab.tar.gz
   - tar xfz scilab.tar.gz
   - export PATH="$PWD/scilab-5.5.0/bin:$PATH"
-  - scilab -version
+  - scilab -version; true
   # install conda environment
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
