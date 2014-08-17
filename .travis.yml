@@ -13,13 +13,11 @@ env:
 
 before_install:
   - sudo apt-get update -qq;
-  # install scilab 5.5.0
+  # download Scilab 5.5.0 and add it to the path
   - wget http://www.scilab.org/download/5.5.0/scilab-5.5.0.bin.linux-x86_64.tar.gz -O scilab.tar.gz
   - tar xfz scilab.tar.gz
-  - sudo cp -r scilab-5.5.0/bin /usr
-  - sudo cp -r scilab-5.5.0/include /usr
-  - sudo cp -r scilab-5.5.0/lib /usr
-  - sudo cp -r scilab-5.5.0/share /usr
+  - export PATH="$PWD/scilab-5.5.0/bin:$PATH"
+  - scilab -version
   # install conda environment
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
