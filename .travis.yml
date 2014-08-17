@@ -1,4 +1,4 @@
-# travis-ci.org definition for scilab2py build
+# travis-ci.org definition for oct2py build
 
 # After changing this file, check it on:
 #   http://lint.travis-ci.org/
@@ -6,13 +6,32 @@
 # http://conda.pydata.org/docs/travis.html
 language: python
 
-python:
-    - 2.7
+env:
+    - CONDA="python=2.7 numpy=1.7.1 scipy=0.12"
+    - CONDA="python=3.3 numpy scipy"
+    - CONDA="python=3.4 numpy scipy"
 
 before_install:
   - sudo apt-get update -qq;
-  - sudo apt-get install -qq python-scipy python-pip
-  - travis_retry pip install IPython nose pip coverage coveralls
+  # install scilab 5.5.0
+  - wget http://www.scilab.org/download/5.5.0/scilab-5.5.0.bin.linux-x86_64.tar.gz -O scilab.tar.gz
+  - tar xfz scilab.tar.gz
+  - cd scilab-5.5.0
+  - sudo cp -r bin /usr
+  - sudo cp -r include /usr
+  - sudo cp -r lib /usr
+  - sudo cp -r share /usr
+  # install conda environment
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes
+  - conda update conda
+  - conda info -a
+  - travis_retry conda create -n test $CONDA IPython nose pip coverage
+  - source activate test
+  - travis_retry pip install coveralls
 
 install:
   - export PYTHONWARNINGS=all
@@ -20,13 +39,14 @@ install:
   - cd
 
 script:
-  # sanity checks
-  - scilab -version
-  - python -c "import scilab2py;print(scilab2py.__version__)"
-  - python -c "from scilab2py import scilab;print(scilab.ones(3,3))"
     # run coverage on py2.7, regular on others
-  - export NOSE_ARGS="-v --exe --processes=-1 --process-timeout=120 --process-restartworker"
-  - nosetests $NOSE_ARGS scilab2py;
+  - if [[ $CONDA == python=2.7* ]]; then
+      nosetests -v --exe --with-doctest --with-cov --cover-package scilab2py scilab2py;
+    else
+      nosetests --exe -v scilab2py;
+    fi
 
 after_success:
-    - coveralls
+    - if [[ $CONDA == python=2.7* ]]; then
+          coveralls;
+      fi
