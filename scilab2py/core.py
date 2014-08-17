@@ -53,19 +53,21 @@ class Scilab2Py(object):
         a shared memory (tmpfs) path.
     """
 
-    def __init__(self, executabl=None, logger=None, timeout=-1,
+    def __init__(self, executable=None, logger=None, timeout=-1,
                  oned_as='row', temp_dir=None):
         """Start Scilab and create our MAT helpers
         """
         self._oned_as = oned_as
         self._temp_dir = temp_dir or gettempdir()
-        self._exectable = executable
+        self._executable = executable
         atexit.register(lambda: _remove_temp_files(self._temp_dir))
         self.timeout = timeout
         if not logger is None:
             self.logger = logger
         else:
             self.logger = get_log()
+        import logging
+        self.logger.setLevel(logging.DEBUG)
         self._session = None
         self.restart()
 
@@ -258,7 +260,7 @@ class Scilab2Py(object):
         """
         self._reader = MatRead(self._temp_dir)
         self._writer = MatWrite(self._temp_dir, self._oned_as)
-        self._session = _Session(self.executable,
+        self._session = _Session(self._executable,
                                  self._reader.out_file, self.logger)
 
     # --------------------------------------------------------------
@@ -508,12 +510,12 @@ class _Session(object):
 
     def start(self, executable):
         """
-        Start an scilab session in a subprocess.
+        Start an Scilab session in a subprocess.
 
         Parameters
         ==========
         executable : str
-            Name or path to scilab process.
+            Name or path to Scilab process.
 
         Returns
         =======
@@ -543,11 +545,13 @@ class _Session(object):
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             kwargs['startupinfo'] = startupinfo
             kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
+
             if not executable:
                 executable = 'Scilex'
+
         elif not executable:
             executable = 'scilab'
-
+        print(executable)
         try:
             proc = subprocess.Popen([executable, '-nw'],
                                     **kwargs)
@@ -565,6 +569,7 @@ class _Session(object):
     def evaluate(self, cmds, verbose=True, log=True, logger=None, timeout=-1):
         """Perform the low-level interaction with an Scilab Session
         """
+
         self.logger = logger
 
         if not timeout == -1:
@@ -633,9 +638,11 @@ class _Session(object):
         else:
             main_line = '\n'.join(cmds)
 
+        self.logger.debug(output)
+
         self.write(output + '\n')
         self.expect(chr(2))
-
+        self.logger.debug('step 1')
         debug_prompt = ("Type 'resume' or 'abort' to return to "
                         "standard level prompt.")
 
