@@ -159,6 +159,10 @@ class ScilabMagics(Magics):
         '-f', '--format', action='store',
         help='Plot format (png, svg or jpg).'
         )
+    @argument(
+        '-g', '--gui', action='store_true', default=False,
+        help='Show a gui for plots.  Default is False'
+        )
 
     @needs_local_scope
     @argument(
@@ -276,6 +280,9 @@ class ScilabMagics(Magics):
         endfunction
         ''' % locals()
 
+        if args.gui:
+            pre_call = ''
+
         code = ' '.join((pre_call, code)).strip()
 
         try:
@@ -291,7 +298,8 @@ class ScilabMagics(Magics):
         key = 'ScilabMagic.Scilab'
         display_data = []
 
-        self._sci.eval_('handle_all_fig()')
+        if not args.gui:
+            self._sci.eval_('handle_all_fig()')
 
         # Publish images
         images = []

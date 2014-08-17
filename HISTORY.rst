@@ -5,8 +5,9 @@ Release History
 
 0.3.0 (2014-xx-xx)
 ++++++++++++++++++
-- Allow keyword arguments in functions (e.g. `plot([1,2,3], linewidth=2))`).
+- Allow keyword arguments in functions: `octave.plot([1,2,3], linewidth=2))`
   These are translated to ("prop", value) arguments to the function.
+- Add option to show plotting gui with `-g` flag in ScilabMagic.
 
 
 0.2.0 (2014-08-14)
