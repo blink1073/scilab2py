@@ -236,17 +236,18 @@ class Scilab2Py(object):
         outfile = self._reader.out_file
         if os.path.exists(outfile) and os.stat(outfile).st_size:
             try:
-                resp = self._reader.extract_file()
+                data = self._reader.extract_file()
             except (TypeError, IOError) as e:
                 self.logger.debug(e)
             else:
-                if resp is not None:
+                if data is not None:
                     if verbose and log:
-                        self.logger.info(resp)
+                        self.logger.info(data)
                     elif log:
-                        self.logger.debug(resp)
+                        self.logger.debug(data)
+                return data
 
-        if str(resp):
+        if resp:
             return resp
 
     def restart(self):
