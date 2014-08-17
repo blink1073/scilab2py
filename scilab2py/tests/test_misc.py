@@ -51,6 +51,7 @@ class MiscTests(test.TestCase):
         lines = hdlr.stream.getvalue().strip().split('\n')
         resp = '\n'.join(lines)
         assert 'zeros(A__)' in resp
+        print(resp)
         assert '0.0' in resp
         assert 'loadmatfile ' in resp
 

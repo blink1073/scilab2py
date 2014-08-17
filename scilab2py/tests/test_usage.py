@@ -78,15 +78,13 @@ class BasicUsageTest(test.TestCase):
     def test_open_close(self):
         """Test opening and closing the Scilab session
         """
-        sci_ = Scilab2Py()
-        sci_.exit()
-        self.assertRaises(Scilab2PyError, sci_.push, name=['a'],
+        self.sci.exit()
+        self.assertRaises(Scilab2PyError, self.sci.push, name=['a'],
                           var=[1.0])
-        sci_.restart()
-        sci_.push('a', 5)
-        a = sci_.pull('a')
+        self.sci.restart()
+        self.sci.push('a', 5)
+        a = self.sci.pull('a')
         assert a == 5
-        sci_.exit()
 
     def test_struct(self):
         """Test Struct construct
@@ -107,18 +105,15 @@ class BasicUsageTest(test.TestCase):
     def test_syntax_error(self):
         """Make sure a syntax error in Scilab throws an Scilab2PyError
         """
-        sci = Scilab2Py()
-        self.assertRaises(Scilab2PyError, sci.eval, "a='1")
-        sci = Scilab2Py()
-        self.assertRaises(Scilab2PyError, sci.eval, "a=1+*3")
+        self.assertRaises(Scilab2PyError, self.sci.eval, "a='1")
+        self.assertRaises(Scilab2PyError, self.sci.eval, "a=1+*3")
 
-        sci.push('a', 1)
-        a = sci.pull('a')
+        self.sci.push('a', 1)
+        a = self.sci.pull('a')
         self.assertEqual(a, 1)
 
     def test_scilab_error(self):
-        sci = Scilab2Py()
-        self.assertRaises(Scilab2PyError, sci.eval, 'a = ones2(1)')
+        self.assertRaises(Scilab2PyError, self.sci.eval, 'a = ones2(1)')
 
     def test_context_manager(self):
         '''Make sure Scilab2Py works within a context manager'''
@@ -128,6 +123,7 @@ class BasicUsageTest(test.TestCase):
         with self.sci as sci2:
             ones = sci2.ones(1)
         assert ones == np.ones(1)
+        self.sci.restart()
 
     def test_narg_out(self):
         s = self.sci.svd(np.array([[1, 2], [1, 3]]))
@@ -140,3 +136,8 @@ class BasicUsageTest(test.TestCase):
             thisdir = os.path.dirname(os.path.abspath('.'))
             assert sci._reader.out_file.startswith(thisdir)
             assert sci._writer.in_file.startswith(thisdir)
+
+    def test_keyword_arguments(self):
+        self.sci.set(auto_clear='off')
+        self.sci.plot([1, 2, 3], linewidth=3)
+        self.sci.close()

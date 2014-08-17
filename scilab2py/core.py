@@ -236,11 +236,14 @@ class Scilab2Py(object):
         outfile = self._reader.out_file
         if os.path.exists(outfile) and os.stat(outfile).st_size:
             try:
-                return self._reader.extract_file()
+                resp = self._reader.extract_file()
             except (TypeError, IOError) as e:
                 self.logger.debug(e)
+            else:
+                if resp is not None:
+                    self.logger.debug(resp)
 
-        if resp:
+        if resp != '':
             return resp
 
     def restart(self):
@@ -330,20 +333,22 @@ class Scilab2Py(object):
                 raise Scilab2PyError(msg)
         prop_vals = ', '.join(prop_vals)
 
-        call_line += func + '('
-
         if nout:
             # create a dummy list of var names ("a", "b", "c", ...)
             # use ascii char codes so we can increment
             argout_list, save_line = self._reader.setup(nout)
             call_line = '[{0}] = '.format(', '.join(argout_list))
 
+        call_line += func + '('
+
         if inputs:
             argin_list, load_line = self._writer.create_file(inputs)
             call_line += ', '.join(argin_list)
 
         if prop_vals:
-            call_line += ', ' + prop_vals
+            if inputs:
+                call_line += ', '
+            call_line += prop_vals
 
         call_line += ')'
 
