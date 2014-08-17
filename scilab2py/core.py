@@ -38,6 +38,8 @@ class Scilab2Py(object):
 
     Parameters
     ----------
+    executable : str, optional
+        Name of the Scilab executable, can be a system path.
     logger : logging object, optional
         Optional logger to use for Scilab2Py session
     timeout : float, opional
@@ -51,12 +53,13 @@ class Scilab2Py(object):
         a shared memory (tmpfs) path.
     """
 
-    def __init__(self, logger=None, timeout=-1, oned_as='row',
-                 temp_dir=None):
+    def __init__(self, executabl=None, logger=None, timeout=-1,
+                 oned_as='row', temp_dir=None):
         """Start Scilab and create our MAT helpers
         """
         self._oned_as = oned_as
         self._temp_dir = temp_dir or gettempdir()
+        self._exectable = executable
         atexit.register(lambda: _remove_temp_files(self._temp_dir))
         self.timeout = timeout
         if not logger is None:
@@ -255,7 +258,8 @@ class Scilab2Py(object):
         """
         self._reader = MatRead(self._temp_dir)
         self._writer = MatWrite(self._temp_dir, self._oned_as)
-        self._session = _Session(self._reader.out_file, self.logger)
+        self._session = _Session(self.executable,
+                                 self._reader.out_file, self.logger)
 
     # --------------------------------------------------------------
     # Private API
@@ -491,10 +495,10 @@ class _Session(object):
     """Low-level session Scilab session interaction.
     """
 
-    def __init__(self, outfile, logger):
+    def __init__(self, executable, outfile, logger):
         self.timeout = int(1e6)
         self.read_queue = queue.Queue()
-        self.proc = self.start()
+        self.proc = self.start(executable)
         self._first = True
         self.stdout = sys.stdout
         self.outfile = outfile
@@ -502,9 +506,14 @@ class _Session(object):
         self.logger = logger
         atexit.register(self.close)
 
-    def start(self):
+    def start(self, executable):
         """
         Start an scilab session in a subprocess.
+
+        Parameters
+        ==========
+        executable : str
+            Name or path to scilab process.
 
         Returns
         =======
@@ -522,25 +531,25 @@ class _Session(object):
         Matlab compatibilty mode.
 
         """
-        return self.start_subprocess()
-
-    def start_subprocess(self):
-        """Start scilab using a subprocess (no tty support)"""
         errmsg = ('\n\nPlease install Scilab and put it in your path\n')
         ON_POSIX = 'posix' in sys.builtin_module_names
         self.rfid, wpipe = os.pipe()
         rpipe, self.wfid = os.pipe()
         kwargs = dict(close_fds=ON_POSIX, bufsize=0, stdin=rpipe,
                       stderr=wpipe, stdout=wpipe)
-        proc_name = 'scilab'
+
         if os.name == 'nt':
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             kwargs['startupinfo'] = startupinfo
             kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
-            proc_name = 'Scilex'
+            if not executable:
+                executable = 'Scilex'
+        elif not executable:
+            executable = 'scilab'
+
         try:
-            proc = subprocess.Popen([proc_name, '-nw'],
+            proc = subprocess.Popen([executable, '-nw'],
                                     **kwargs)
         except OSError:  # pragma: no cover
             raise Scilab2PyError(errmsg)
@@ -658,11 +667,7 @@ class _Session(object):
         return '\n'.join(resp).rstrip()
 
     def interrupt(self):
-        if not os.name == 'nt':
-            self.proc.send_signal(signal.SIGINT)
-        else:
-            self.start_subprocess()
-            raise Scilab2PyError('Session Interrupted, restarting')
+        self.proc.send_signal(signal.SIGINT)
 
     def expect(self, strings):
         """Look for a string or strings in the incoming data"""
