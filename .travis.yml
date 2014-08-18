@@ -33,12 +33,11 @@ before_install:
 install:
   - export PYTHONWARNINGS=all
   - python setup.py install
-  - cd
 
 script:
     # run coverage on py2.7, regular on others
   - if [[ $CONDA == python=2.7* ]]; then
-      nosetests --exe -v --with-doctest --with-cov --cover-package scilab2py scilab2py;
+      nosetests --exe -v --with-doctest --with-cov --cover-package scilab2py;
     else
       nosetests --exe -v scilab2py;
     fi
