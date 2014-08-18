@@ -17,20 +17,18 @@ clean:
 
 test:
 	make clean
-	pip install doctest-ignore-unicode
 	python setup.py build
 	export PYTHONWARNINGS="all"; cd build; nosetests $(TEST_ARGS)
 	make clean
 
 cover:
 	make clean
-	pip install nose-cov coveralls doctest-ignore-unicode
+	pip install nose-cov
 	nosetests $(TEST_ARGS) --with-cov --cov scilab2py
-	coveralls
 	coverage annotate
 
 release:
-	make cover
+	make test
 	make gh-pages
 	pip install wheel
 	python setup.py register
