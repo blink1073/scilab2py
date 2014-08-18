@@ -551,7 +551,7 @@ class _Session(object):
 
         elif not executable:
             executable = 'scilab'
-        print(executable)
+
         try:
             proc = subprocess.Popen([executable, '-nw'],
                                     **kwargs)
