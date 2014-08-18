@@ -1,1 +1,1 @@
-[run]source = scilab2py
+# Configuration for coverage.py[run]branch = Truesource = scilab2pyinclude = */scilab2py/*omit =    */setup.py[report]exclude_lines =    def __repr__    if __name__ == .__main__.:
