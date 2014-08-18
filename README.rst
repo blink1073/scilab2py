@@ -7,8 +7,8 @@ Scilab2Py: Python to Scilab Bridge
 .. image:: https://pypip.in/d/scilab2py/badge.png
         :target: https://crate.io/packages/scilab2py/
 
-.. image:: https://coveralls.io/repos/blink1073/scilab2py/badge.png?branch=HEAD
-        :target: https://coveralls.io/r/blink1073/scilab2py?branch=HEAD
+.. image:: https://coveralls.io/repos/blink1073/scilab2py/badge.png?branch=master
+        :target: https://coveralls.io/r/blink1073/scilab2py?branch=master
 
 
 Scilab2Py is a means to seamlessly call Scilab functions and scripts from Python.
@@ -55,9 +55,6 @@ To install Scilab2Py, simply:
 .. code-block:: bash
 
     $ pip install scilab2py
-
-Note: scilab2py has been tested with Ubuntu 14.04 and Windows 7.  It
-does not work on Ubuntu 12.04.
 
 
 Documentation
