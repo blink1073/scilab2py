@@ -258,61 +258,36 @@ class ScilabMagics(Magics):
         else:
             plot_format = 'png'
 
-        pre_call = '''
-        h = gdf()
-        h.figure_position = [0, 0]
-        h.toolbar_visible = 'off'
-        h.menubar_visible = 'off'
-        h.infobar_visible = 'off'
-
-        function handle_all_fig()
-           ids_array=winsid();
-           for i=1:length(ids_array)
-              id=ids_array(i);
-              outfile = sprintf('%(plot_dir)s/__ipy_sci_fig_%%03d', i);
-              if '%(plot_format)s' == 'jpg' then
-                xs2jpg(id, outfile + '.jpg')
-              elseif '%(plot_format)s' == 'jpeg' then
-                xs2jpg(id, outfile + '.jpeg')
-              elseif '%(plot_format)s' == 'png' then
-                xs2png(id, outfile)
-              else
-                xs2svg(id, outfile)
-              end
-              close(get_figure_handle(id));
-           end
-        endfunction
-        ''' % locals()
-
         if args.gui:
-            pre_call = ''
-
-        code = ' '.join((pre_call, code)).strip()
+            plot_dir = None
 
         try:
-            resp = self._sci.eval(code, verbose=False)
+            text_output = str(self._sci.eval(code, plot_dir=plot_dir, plot_format=plot_format,
+                                                           verbose=False))
         except (scilab2py.Scilab2PyError) as exception:
             msg = str(exception)
             if 'Scilab Syntax Error' in msg:
                 raise ScilabMagicError(msg)
-            msg = msg.replace(pre_call.strip(), '')
             msg = re.sub('"""\s+', '"""\n', msg)
             msg = re.sub('\s+"""', '\n"""', msg)
             raise ScilabMagicError(msg)
         key = 'ScilabMagic.Scilab'
         display_data = []
 
-        if not args.gui:
-            self._sci.eval_('handle_all_fig()')
+                # Publish text output
+        if text_output != "None":
+            display_data.append((key, {'text/plain': text_output}))
 
         # Publish images
         images = []
-        for imgfile in glob("%s/*" % plot_dir):
-            with open(imgfile, 'rb') as fid:
-                images.append(fid.read())
-        rmtree(plot_dir)
+        if not args.gui:
+            for imgfile in glob("%s/*" % plot_dir):
+                with open(imgfile, 'rb') as fid:
+                    images.append(fid.read())
+            rmtree(plot_dir)
 
         plot_mime_type = _mimetypes.get(plot_format, 'image/png')
+
         for image in images:
             display_data.append((key, {plot_mime_type: image}))
 
@@ -327,9 +302,20 @@ class ScilabMagics(Magics):
             self._publish_display_data(source=source, data=data)
 
         if return_output:
-            return resp
-        elif not resp is None:
-            print(resp)
+            try:
+                ans = self._sci.pull('_')
+            except scilab2py.Scilab2PyError:
+                return
+
+            # Unfortunately, Scilab doesn't have a "None" object,
+            # so we can't return any NaN outputs
+            try:
+                if np.isscalar(ans) and np.isnan(ans):
+                    ans = None
+            except:
+                pass
+
+            return ans
 
 
 __doc__ = __doc__.format(

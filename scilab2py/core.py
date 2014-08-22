@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 import re
 import atexit
+import glob
 import signal
 import subprocess
 import sys
@@ -53,7 +54,7 @@ class Scilab2Py(object):
         a shared memory (tmpfs) path.
     """
 
-    def __init__(self, executable=None, logger=None, timeout=-1,
+    def __init__(self, executable=None, logger=None, timeout=None,
                  oned_as='row', temp_dir=None):
         """Start Scilab and create our MAT helpers
         """
@@ -67,7 +68,7 @@ class Scilab2Py(object):
         else:
             self.logger = get_log()
         import logging
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logging.ERROR)
         self._session = None
         self.restart()
 
@@ -93,7 +94,7 @@ class Scilab2Py(object):
         except Scilab2PyError as e:
             self.logger.debug(e)
 
-    def push(self, name, var, verbose=False, timeout=-1):
+    def push(self, name, var, verbose=False, timeout=None):
         """
         Put a variable or variables into the Scilab session.
 
@@ -132,7 +133,7 @@ class Scilab2Py(object):
         _, load_line = self._writer.create_file(vars_, names)
         self.eval(load_line, verbose=verbose, timeout=timeout)
 
-    def pull(self, var, verbose=False, timeout=-1):
+    def pull(self, var, verbose=False, timeout=None):
         """
         Retrieve a value or values from the Scilab session.
 
@@ -173,7 +174,8 @@ class Scilab2Py(object):
         else:
             return data
 
-    def eval(self, cmd, verbose=False, log=True, timeout=-1):
+    def eval(self, cmds, verbose=False, timeout=None, log=True,
+                 plot_dir=None, plot_name='plot', plot_format='png'):
         """
         Perform Scilab command or commands.
 
@@ -185,6 +187,15 @@ class Scilab2Py(object):
              Log Scilab output at info level.
         timeout : float
             Time to wait for response from Scilab (per character).
+                plot_dir: str, optional
+            If specificed, save the session's plot figures to the plot
+            directory instead of displaying the plot window.
+        plot_name : str, optional
+            Saved plots will start with `plot_name` and
+            end with "_%%.xxx' where %% is the plot number and
+            xxx is the `plot_format`.
+        plot_format: str, optional
+            The format in which to save the plot (PNG by default).
 
         Returns
         -------
@@ -200,10 +211,8 @@ class Scilab2Py(object):
         if not self._session:
             raise Scilab2PyError('No Scilab Session')
 
-        if isinstance(cmd, (str, unicode)):
-            cmds = [cmd]
-        else:
-            cmds = cmd
+        if isinstance(cmds, (str, unicode)):
+            cmds = [cmds]
 
         if verbose and log:
             [self.logger.info(line) for line in cmds]
@@ -211,7 +220,7 @@ class Scilab2Py(object):
         elif log:
             [self.logger.debug(line) for line in cmds]
 
-        if timeout == -1:
+        if timeout is None:
             timeout = self.timeout
 
         post_call = ''
@@ -229,6 +238,39 @@ class Scilab2Py(object):
 
         cmds.append(post_call)
 
+        if not plot_dir is None:
+            spec = '%(plot_dir)s/%(plot_name)s*.%(plot_format)s' % locals()
+            existing = glob.glob(spec)
+            plot_offset = len(existing)
+
+            plot_call = '''
+                h = gdf();
+                h.figure_position = [0, 0];
+                h.toolbar_visible = 'off';
+                h.menubar_visible = 'off';
+                h.infobar_visible = 'off';
+
+                function handle_all_fig()
+                   ids_array=winsid();
+                   for i=1:length(ids_array)
+                      id=ids_array(i);
+                      outfile = sprintf('%(plot_dir)s/__ipy_sci_fig_%%03d', i + %(plot_offset)s);
+                      if '%(plot_format)s' == 'jpg' then
+                        xs2jpg(id, outfile + '.jpg');
+                      elseif '%(plot_format)s' == 'jpeg' then
+                        xs2jpg(id, outfile + '.jpeg');
+                      elseif '%(plot_format)s' == 'png' then
+                        xs2png(id, outfile);
+                      else
+                        xs2svg(id, outfile);
+                      end
+                      close(get_figure_handle(id));
+                   end
+                endfunction
+                ''' % locals()
+
+            cmds.insert(0, plot_call)
+
         try:
             resp = self._session.evaluate(cmds, verbose, log, self.logger,
                                           timeout=timeout)
@@ -241,18 +283,20 @@ class Scilab2Py(object):
         outfile = self._reader.out_file
         if os.path.exists(outfile) and os.stat(outfile).st_size:
             try:
-                data = self._reader.extract_file()
+                resp = self._reader.extract_file()
             except (TypeError, IOError) as e:
                 self.logger.debug(e)
             else:
-                if data is not None:
+                if resp is not None:
                     if verbose and log:
-                        self.logger.info(data)
+                        self.logger.info(resp)
                     elif log:
-                        self.logger.debug(data)
-                return data
+                        self.logger.debug(resp)
 
-        if resp:
+        if not plot_dir is None:
+            self._session.evaluate(['handle_all_fig();'], verbose, log, self.logger, timeout=timeout)
+
+        if not resp in ['', []]:
             return resp
 
     def restart(self):
@@ -306,6 +350,15 @@ class Scilab2Py(object):
             different value.
         verbose : bool, optional
              Log Scilab output at info level.
+                plot_dir: str, optional
+            If specificed, save the session's plot figures to the plot
+            directory instead of displaying the plot window.
+        plot_name : str, optional
+            Saved plots will start with `plot_name` and
+            end with "_%%.xxx' where %% is the plot number and
+            xxx is the `plot_format`.
+        plot_format: str, optional
+            The format in which to save the plot (PNG by default).
         kwargs : dictionary, optional
             Key - value pairs to be passed as prop - value inputs to the
             function.  The values must be strings or numbers.
@@ -334,7 +387,11 @@ class Scilab2Py(object):
         load_line = call_line = save_line = ''
 
         prop_vals = []
+        eval_kwargs = {}
         for (key, value) in kwargs.items():
+            if key in ['verbose', 'timeout'] or key.startswith('plot_'):
+                eval_kwargs[key] = value
+                continue
             if isinstance(value, (str, unicode, int, float)):
                 prop_vals.append('"%s", %s' % (key, repr(value)))
             else:
@@ -364,7 +421,7 @@ class Scilab2Py(object):
 
         # create the command and execute in octave
         cmd = [load_line, call_line, save_line]
-        data = self.eval(cmd, verbose=verbose, timeout=timeout)
+        data = self.eval(cmd, **eval_kwargs)
 
         if isinstance(data, dict) and not isinstance(data, Struct):
             data = [data.get(v, None) for v in argout_list]
@@ -561,18 +618,18 @@ class _Session(object):
             self.reader = _Reader(self.rfid, self.read_queue)
             return proc
 
-    def set_timeout(self, timeout=-1):
-        if timeout == -1:
+    def set_timeout(self, timeout=None):
+        if timeout is None:
             timeout = int(1e6)
         self.timeout = timeout
 
-    def evaluate(self, cmds, verbose=True, log=True, logger=None, timeout=-1):
+    def evaluate(self, cmds, verbose=True, log=True, logger=None, timeout=None):
         """Perform the low-level interaction with an Scilab Session
         """
 
         self.logger = logger
 
-        if not timeout == -1:
+        if not timeout is None:
             self.set_timeout(timeout)
 
         if not self.proc:
@@ -674,7 +731,8 @@ class _Session(object):
         return '\n'.join(resp).rstrip()
 
     def interrupt(self):
-        self.proc.send_signal(signal.SIGINT)
+        if not os.name == 'nt':
+            self.proc.send_signal(signal.SIGINT)
 
     def expect(self, strings):
         """Look for a string or strings in the incoming data"""
