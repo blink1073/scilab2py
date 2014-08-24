@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>API Reference &mdash; Scilab2Py 0.2 documentation</title>
+    <title>API Reference &mdash; Scilab2Py 0.3 documentation</title>
     
     <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.2',
+        VERSION:     '0.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -28,7 +28,7 @@
     <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-3.1.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Scilab2Py 0.2 documentation" href="../index.html" />
+    <link rel="top" title="Scilab2Py 0.3 documentation" href="../index.html" />
     <link rel="next" title="Information" href="info.html" />
     <link rel="prev" title="Conversions" href="conversions.html" />
 <meta charset='utf-8'>
@@ -53,7 +53,7 @@
         </button>
         <a class="navbar-brand" href="../index.html">
           Scilab2Py</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.2</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.3</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -158,7 +158,7 @@
 <span id="scilab2py"></span><h2>Scilab2Py<a class="headerlink" href="#module-scilab2py" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="scilab2py.Scilab2Py">
-<em class="property">class </em><tt class="descclassname">scilab2py.</tt><tt class="descname">Scilab2Py</tt><big>(</big><em>logger=None</em>, <em>timeout=-1</em>, <em>oned_as='row'</em>, <em>temp_dir=None</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">scilab2py.</tt><tt class="descname">Scilab2Py</tt><big>(</big><em>executable=None</em>, <em>logger=None</em>, <em>timeout=None</em>, <em>oned_as='row'</em>, <em>temp_dir=None</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py" title="Permalink to this definition">¶</a></dt>
 <dd><p>Manages a Scliab session.</p>
 <p>Uses MAT files to pass data between Scilab and Numpy.
 The function must either exist as an file in this directory or
@@ -170,7 +170,11 @@ when calling a command, then they will be logged as info.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>logger</strong> : logging object, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>executable</strong> : str, optional</p>
+<blockquote>
+<div><p>Name of the Scilab executable, can be a system path.</p>
+</div></blockquote>
+<p><strong>logger</strong> : logging object, optional</p>
 <blockquote>
 <div><p>Optional logger to use for Scilab2Py session</p>
 </div></blockquote>
@@ -202,7 +206,7 @@ a shared memory (tmpfs) path.</p>
 
 <dl class="method">
 <dt id="scilab2py.Scilab2Py.push">
-<tt class="descname">push</tt><big>(</big><em>name</em>, <em>var</em>, <em>verbose=False</em>, <em>timeout=-1</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.push" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">push</tt><big>(</big><em>name</em>, <em>var</em>, <em>verbose=False</em>, <em>timeout=None</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.push" title="Permalink to this definition">¶</a></dt>
 <dd><p>Put a variable or variables into the Scilab session.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -240,7 +244,7 @@ a shared memory (tmpfs) path.</p>
 
 <dl class="method">
 <dt id="scilab2py.Scilab2Py.pull">
-<tt class="descname">pull</tt><big>(</big><em>var</em>, <em>verbose=False</em>, <em>timeout=-1</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.pull" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">pull</tt><big>(</big><em>var</em>, <em>verbose=False</em>, <em>timeout=None</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.pull" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve a value or values from the Scilab session.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -288,7 +292,7 @@ a shared memory (tmpfs) path.</p>
 
 <dl class="method">
 <dt id="scilab2py.Scilab2Py.eval">
-<tt class="descname">eval</tt><big>(</big><em>cmd</em>, <em>verbose=False</em>, <em>log=True</em>, <em>timeout=-1</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.eval" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">eval</tt><big>(</big><em>cmds</em>, <em>verbose=False</em>, <em>timeout=None</em>, <em>log=True</em>, <em>plot_dir=None</em>, <em>plot_name='plot'</em>, <em>plot_format='png'</em>, <em>plot_width=620</em>, <em>plot_height=590</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.eval" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform Scilab command or commands.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -304,7 +308,31 @@ a shared memory (tmpfs) path.</p>
 </div></blockquote>
 <p><strong>timeout</strong> : float</p>
 <blockquote>
-<div><p>Time to wait for response from Scilab (per character).</p>
+<div><dl class="docutils">
+<dt>Time to wait for response from Scilab (per character).</dt>
+<dd><p class="first last">plot_dir: str, optional</p>
+</dd>
+</dl>
+<p>If specificed, save the session&#8217;s plot figures to the plot
+directory instead of displaying the plot window.</p>
+</div></blockquote>
+<p><strong>plot_name</strong> : str, optional</p>
+<blockquote>
+<div><p>Saved plots will start with <cite>plot_name</cite> and
+end with &#8220;_%%.xxx&#8217; where %% is the plot number and
+xxx is the <cite>plot_format</cite>.</p>
+</div></blockquote>
+<p><strong>plot_format: str, optional</strong></p>
+<blockquote>
+<div><p>The format in which to save the plot (PNG by default).</p>
+</div></blockquote>
+<p><strong>plot_width: int, optional</strong></p>
+<blockquote>
+<div><p>The plot with in pixels.</p>
+</div></blockquote>
+<p><strong>plot_height: int, optional</strong></p>
+<blockquote>
+<div><p>The plot height in pixels.</p>
 </div></blockquote>
 </td>
 </tr>

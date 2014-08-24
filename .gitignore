@@ -1,9 +1,0 @@
-*.pyc
-.coverage
-MANIFEST
-.spyderproject
-.coveralls.yml
-scilab2py.egg-info/*
-build/*
-dist/*
-docs/_build/*
