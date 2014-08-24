@@ -256,7 +256,7 @@ class ScilabMagics(Magics):
                 self._sci.push(input, val)
 
         # generate plots in a temporary directory
-        plot_dir = tempfile.mkdtemp().replace('\\', '/')
+        plot_dir = tempfile.mkdtemp()
 
         if args.format is not None:
             plot_format = args.format
@@ -273,11 +273,11 @@ class ScilabMagics(Magics):
         plot_width, plot_height = [int(s) for s in size.split(',')]
 
         try:
-            text_output = str(self._sci.eval(code, plot_dir=plot_dir,
+            resp = self._sci.eval(code, plot_dir=plot_dir,
                                              plot_format=plot_format,
                                              plot_width=plot_width,
                                              plot_height=plot_height,
-                                             verbose=False))
+                                             verbose=False)
         except (scilab2py.Scilab2PyError) as exception:
             msg = str(exception)
             if 'Scilab Syntax Error' in msg:
@@ -288,9 +288,10 @@ class ScilabMagics(Magics):
         key = 'ScilabMagic.Scilab'
         display_data = []
 
-                # Publish text output
-        if text_output != "None":
-            display_data.append((key, {'text/plain': text_output}))
+        # Publish text output
+        if not return_output and not resp is None:
+            if resp != os.getcwd():
+                display_data.append((key, {'text/plain': str(resp)}))
 
         # Publish images
         images = []
@@ -316,20 +317,7 @@ class ScilabMagics(Magics):
             self._publish_display_data(source=source, data=data)
 
         if return_output:
-            try:
-                ans = self._sci.pull('_')
-            except scilab2py.Scilab2PyError:
-                return
-
-            # Unfortunately, Scilab doesn't have a "None" object,
-            # so we can't return any NaN outputs
-            try:
-                if np.isscalar(ans) and np.isnan(ans):
-                    ans = None
-            except:
-                pass
-
-            return ans
+            return resp
 
 
 __doc__ = __doc__.format(
