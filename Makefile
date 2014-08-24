@@ -2,7 +2,10 @@
 .PHONY: all clean test cover release gh-pages
 
 export TEST_ARGS=--exe -v --with-doctest
-export KILL_SCILAB="from scilab2py import kill_scilab; kill_scilab()"
+export NAME='scilab2py'
+export KILL_PROC="from $(NAME) import kill_scilab; kill_scilab()"
+export GHP_MSG="Generated gh-pages for `git log master -1 --pretty=short --abbrev-commit`"
+export VERSION=`python -c "import $(NAME); print($(NAME).__version__)"`
 
 all: clean
 	python setup.py install
@@ -11,7 +14,7 @@ clean:
 	rm -rf build
 	rm -rf dist
 	find . -name "*.pyc" -o -name "*.py,cover"| xargs rm -f
-	python -c $(KILL_SCILAB)
+	python -c $(KILL_PROC)
 	killall -9 nosetests; true
 
 test: clean
@@ -21,7 +24,7 @@ test: clean
 
 cover: clean
 	pip install nose-cov
-	nosetests $(TEST_ARGS) --with-cov --cov scilab2py
+	nosetests $(TEST_ARGS) --with-cov --cov $(NAME) $(NAME)
 	coverage annotate
 
 release: test gh-pages
@@ -29,24 +32,12 @@ release: test gh-pages
 	python setup.py register
 	python setup.py bdist_wheel upload
 	python setup.py sdist --formats=gztar,zip upload
-	git tag v`python -c "import scilab2py;print(scilab2py.__version__)"`
-	git push origin master --all
+	git tag v$(VERSION)
+	git push origin --all
 
 gh-pages: clean
-	pip install sphinx-bootstrap-theme numpydoc sphinx
+	pip install sphinx-bootstrap-theme numpydoc sphinx ghp-import
 	git checkout master
 	git pull origin master
-	rm -rf ../temp_docs
-	mkdir ../temp_docs
-	rm -rf docs/build
 	make -C docs html
-	cp -R docs/_build/html/ ../temp_docs
-	mv ../temp_docs/html ../temp_docs/docs
-	git checkout gh-pages
-	rm -rf docs
-	cp -R ../temp_docs/docs/ .
-	git add docs
-	git commit -m "rebuild docs"
-	git push origin gh-pages
-	rm -rf ../temp_docs
-	git checkout master
+	ghp-import -n -p -m $(GHP_MSG) docs/_build/html

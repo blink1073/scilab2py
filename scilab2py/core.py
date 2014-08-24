@@ -175,8 +175,8 @@ class Scilab2Py(object):
             return data
 
     def eval(self, cmds, verbose=False, timeout=None, log=True,
-                 plot_dir=None, plot_name='plot', plot_format='png',
-                 plot_width=620, plot_height=590):
+             plot_dir=None, plot_name='plot', plot_format='png',
+             plot_width=620, plot_height=590):
         """
         Perform Scilab command or commands.
 
@@ -228,20 +228,17 @@ class Scilab2Py(object):
         if timeout is None:
             timeout = self.timeout
 
-        force_ans = ''
-        for cmd in cmds:
+        for cmd in reversed(cmds):
 
             match = re.match('([a-z][a-zA-Z0-9_]*) *=', cmd)
             if match and not cmd.strip().endswith(';'):
-                force_ans = 'ans = %s' % match.groups()[0]
+                cmds.append('ans = %s' % match.groups()[0])
                 break
 
             match = re.match('([a-z][a-zA-Z0-9_]*)\Z', cmd.strip())
             if match and not cmd.strip().endswith(';'):
-                force_ans = 'ans = %s' % match.groups()[0]
+                cmds.append('ans = %s' % match.groups()[0])
                 break
-
-        cmds.append(force_ans)
 
         pre_call = ''
         post_call = ''
@@ -285,7 +282,8 @@ class Scilab2Py(object):
 
         try:
             resp = self._session.evaluate(cmds, verbose, log, self.logger,
-                                          timeout=timeout, pre_call=pre_call, post_call=post_call)
+                                          timeout=timeout, pre_call=pre_call,
+                                          post_call=post_call)
         except KeyboardInterrupt:
             if os.name == 'nt':
                 self.restart()
@@ -433,7 +431,7 @@ class Scilab2Py(object):
         if isinstance(data, dict) and not isinstance(data, Struct):
             data = [data.get(v, None) for v in argout_list]
             if len(data) == 1 and data[0] is None:
-                    data = None
+                data = None
 
         return data
 
@@ -631,7 +629,7 @@ class _Session(object):
         self.timeout = timeout
 
     def evaluate(self, cmds, verbose=True, log=True, logger=None, timeout=None,
-                              pre_call='', post_call=''):
+                 pre_call='', post_call=''):
         """Perform the low-level interaction with an Scilab Session
         """
 
