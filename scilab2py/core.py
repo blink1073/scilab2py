@@ -240,6 +240,8 @@ class Scilab2Py(object):
                 cmds.append('ans = %s' % match.groups()[0])
                 break
 
+        cmds.append('if (exists("ans")) ; _ans = ans; end')
+
         pre_call = ''
         post_call = ''
 
@@ -293,15 +295,16 @@ class Scilab2Py(object):
         outfile = self._reader.out_file
         if os.path.exists(outfile) and os.stat(outfile).st_size:
             try:
-                resp = self._reader.extract_file()
+                data = self._reader.extract_file()
             except (TypeError, IOError) as e:
                 self.logger.debug(e)
             else:
-                if resp is not None:
+                if data is not None:
                     if verbose and log:
-                        self.logger.info(resp)
+                        self.logger.info(data)
                     elif log:
-                        self.logger.debug(resp)
+                        self.logger.debug(data)
+                    resp = data
 
         if not resp in ['', []]:
             return resp
@@ -458,7 +461,7 @@ class Scilab2Py(object):
         doc = "No documentation available for `%s`" % name
 
         try:
-            typeof = self.eval('typeof(%s);' % name)
+            typeof = self.eval('typeof(%s)' % name)
 
         except Scilab2PyError:
             raise Scilab2PyError('No function named `%s`' % name)
@@ -467,8 +470,11 @@ class Scilab2Py(object):
             doc = "`%s` is a built-in Scilab function." % name
 
         elif typeof == 'function':
-            lines = self.eval('fun2string(%s);' % name)
-            if lines:
+
+            lines = self.eval('fun2string(%s)' % name)
+
+            if lines and '!' in lines:
+                lines = lines[lines.index('!'):]
                 lines = lines.replace('!', ' ').splitlines()
 
                 docs = [lines[0].replace('ans(', '%s(' % name), ' ']
@@ -669,13 +675,12 @@ class _Session(object):
             disp(lasterror())
             disp(char(24))
         else
-            if exists("ans") then
-                last_ans = ans;
-                if type(last_ans) == 4 then
-                    last_ans = double(last_ans)
+            if exists("_ans") then
+                if type(_ans) == 4 then
+                    _ans = double(_ans)
                 end
-                if or(type(last_ans) == [1,2,3,5,6,7,8,10]) then
-                    _ = last_ans;
+                if or(type(_ans) == [1,2,3,5,6,7,8,10]) then
+                    _ = _ans;
                     if exists("a__") == 0 then
                         try
                             savematfile -v6 %s _;
@@ -683,10 +688,10 @@ class _Session(object):
                             disp(_)
                         end
                     end
-                elseif type(last_ans)
-                    disp(last_ans);
+                elseif type(_ans)
+                    disp(_ans);
                 end
-                clear("last_ans")
+                clear("_ans")
             end
         end
         %s
