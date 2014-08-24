@@ -64,6 +64,6 @@ Documentation is available online_.
 
 For version information, see the Revision History_.
 
-.. _online: http://blink1073.github.io/scilab2py/docs/
+.. _online: http://blink1073.github.io/scilab2py
 .. _Scilab: http://www.scilab.org/download/
 .. _History: https://github.com/blink1073/scilab2py/blob/master/HISTORY.rst
