@@ -455,13 +455,6 @@ class Scilab2Py(object):
            If the procedure or object does not exist.
 
         """
-        exists = self.eval('exists("{0}")'.format(name), log=False,
-                           verbose=False)
-
-        msg = 'Name: "%s" does not exist on the Scilab session path' % name
-        if str(exists) == '0.0' and not name == 'help':
-            raise Scilab2PyError(msg)
-
         doc = "No documentation available for `%s`" % name
 
         try:
@@ -475,22 +468,23 @@ class Scilab2Py(object):
 
         elif typeof == 'function':
             lines = self.eval('fun2string(%s);' % name)
-            lines = lines.replace('!', ' ').splitlines()
+            if lines:
+                lines = lines.replace('!', ' ').splitlines()
 
-            docs = [lines[0].replace('ans(', '%s(' % name), ' ']
+                docs = [lines[0].replace('ans(', '%s(' % name), ' ']
 
-            in_doc = False
-            for line in lines[1:]:
-                line = line.strip()
+                in_doc = False
+                for line in lines[1:]:
+                    line = line.strip()
 
-                if line.startswith('//'):
-                    docs.append(line[2:])
-                    in_doc = True
+                    if line.startswith('//'):
+                        docs.append(line[2:])
+                        in_doc = True
 
-                elif in_doc and line:
-                    break
+                    elif in_doc and line:
+                        break
 
-            doc = '\n'.join(docs)
+                doc = '\n'.join(docs)
 
         default = self._call.__doc__
         doc += '\n' + '\n'.join([line[8:] for line in default.splitlines()])
