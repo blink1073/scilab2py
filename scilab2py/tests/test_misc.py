@@ -117,7 +117,7 @@ class MiscTests(test.TestCase):
             sci.exit()
             test.assert_raises(Scilab2PyError, sci.eval, 'ones')
 
-    def test_pause(self):
+    def test_xpause(self):
         self.assertRaises(Scilab2PyError,
                           lambda:  self.sci.xpause(10e6, timeout=3))
 

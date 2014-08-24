@@ -10,7 +10,7 @@ Release History
 - Add option to show plotting gui with `-g` flag in ScilabMagic.
 - Add ability to specify the Scilab executable as a keyword argument to
   the Scilab2Py object.
-  - Add specifications for plot saving instead of displaying plots to `eval` and
+ - Add specifications for plot saving instead of displaying plots to `eval` and
     dynamic functions.
 
 

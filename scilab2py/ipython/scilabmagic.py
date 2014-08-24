@@ -160,6 +160,10 @@ class ScilabMagics(Magics):
         help='Plot format (png, svg or jpg).'
         )
     @argument(
+        '-s', '--size', action='store',
+        help='Pixel size of plots, "width,height". Default is "-s 400,250".'
+        )
+    @argument(
         '-g', '--gui', action='store_true', default=False,
         help='Show a gui for plots.  Default is False'
         )
@@ -261,9 +265,16 @@ class ScilabMagics(Magics):
         if args.gui:
             plot_dir = None
 
+        if args.size is not None:
+            size = args.size
+        else:
+            size = '400,240'
+        plot_width, plot_height = [int(s) for s in size.split(',')]
+
         try:
             text_output = str(self._sci.eval(code, plot_dir=plot_dir, plot_format=plot_format,
-                                                           verbose=False))
+                                                                      plot_width=plot_width, plot_height=plot_height,
+                                                                      verbose=False))
         except (scilab2py.Scilab2PyError) as exception:
             msg = str(exception)
             if 'Scilab Syntax Error' in msg:

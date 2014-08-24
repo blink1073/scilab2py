@@ -175,7 +175,8 @@ class Scilab2Py(object):
             return data
 
     def eval(self, cmds, verbose=False, timeout=None, log=True,
-                 plot_dir=None, plot_name='plot', plot_format='png'):
+                 plot_dir=None, plot_name='plot', plot_format='png',
+                 plot_width=620, plot_height=590):
         """
         Perform Scilab command or commands.
 
@@ -196,6 +197,10 @@ class Scilab2Py(object):
             xxx is the `plot_format`.
         plot_format: str, optional
             The format in which to save the plot (PNG by default).
+        plot_width: int, optional
+            The plot with in pixels.
+        plot_height: int, optional
+            The plot height in pixels.
 
         Returns
         -------
@@ -223,33 +228,40 @@ class Scilab2Py(object):
         if timeout is None:
             timeout = self.timeout
 
-        post_call = ''
+        force_ans = ''
         for cmd in cmds:
 
             match = re.match('([a-z][a-zA-Z0-9_]*) *=', cmd)
             if match and not cmd.strip().endswith(';'):
-                post_call = 'ans = %s' % match.groups()[0]
+                force_ans = 'ans = %s' % match.groups()[0]
                 break
 
             match = re.match('([a-z][a-zA-Z0-9_]*)\Z', cmd.strip())
             if match and not cmd.strip().endswith(';'):
-                post_call = 'ans = %s' % match.groups()[0]
+                force_ans = 'ans = %s' % match.groups()[0]
                 break
 
-        cmds.append(post_call)
+        cmds.append(force_ans)
+
+        pre_call = ''
+        post_call = ''
+
+        pre_call += '''
+        h = gdf();
+         h.figure_position = [0, 0];
+         h.figure_size = [%(plot_width)s,%(plot_height)s];
+         h.axes_size = [%(plot_width)s * 0.98, %(plot_height)s * 0.8];
+        ''' % locals()
 
         if not plot_dir is None:
+            plot_dir = plot_dir.replace("\\", "/")
+
             spec = '%(plot_dir)s/%(plot_name)s*.%(plot_format)s' % locals()
             existing = glob.glob(spec)
             plot_offset = len(existing)
 
-            plot_call = '''
-                h = gdf();
-                h.figure_position = [0, 0];
-                h.toolbar_visible = 'off';
-                h.menubar_visible = 'off';
-                h.infobar_visible = 'off';
-
+            pre_call += '''
+                close all;
                 function handle_all_fig()
                    ids_array=winsid();
                    for i=1:length(ids_array)
@@ -269,11 +281,11 @@ class Scilab2Py(object):
                 endfunction
                 ''' % locals()
 
-            cmds.insert(0, plot_call)
+            post_call += 'handle_all_fig();'
 
         try:
             resp = self._session.evaluate(cmds, verbose, log, self.logger,
-                                          timeout=timeout)
+                                          timeout=timeout, pre_call=pre_call, post_call=post_call)
         except KeyboardInterrupt:
             if os.name == 'nt':
                 self.restart()
@@ -292,9 +304,6 @@ class Scilab2Py(object):
                         self.logger.info(resp)
                     elif log:
                         self.logger.debug(resp)
-
-        if not plot_dir is None:
-            self._session.evaluate(['handle_all_fig();'], verbose, log, self.logger, timeout=timeout)
 
         if not resp in ['', []]:
             return resp
@@ -373,9 +382,7 @@ class Scilab2Py(object):
         Scilab2PyError
             If the function call is unsucessful.
         """
-        verbose = kwargs.pop('verbose', False)
         nout = kwargs.pop('nout', get_nout())
-        timeout = kwargs.pop('timeout', self.timeout)
         argout_list = ['ans']
         if '=' in func:
             nout = 0
@@ -623,7 +630,8 @@ class _Session(object):
             timeout = int(1e6)
         self.timeout = timeout
 
-    def evaluate(self, cmds, verbose=True, log=True, logger=None, timeout=None):
+    def evaluate(self, cmds, verbose=True, log=True, logger=None, timeout=None,
+                              pre_call='', post_call=''):
         """Perform the low-level interaction with an Scilab Session
         """
 
@@ -662,6 +670,7 @@ class _Session(object):
         self.logger.debug(expr)
 
         output = """
+        %s;
         clear("ans");
         disp(char(2));
         if execstr("%s", "errcatch") <> 0 then
@@ -687,8 +696,9 @@ class _Session(object):
                 end
                 clear("last_ans")
             end
-            disp(char(3))
-        end""" % (expr, self.outfile)
+        end
+        %s
+        disp(char(3))""" % (pre_call, expr, self.outfile, post_call)
 
         if len(cmds) == 5:
             main_line = cmds[2].strip()
