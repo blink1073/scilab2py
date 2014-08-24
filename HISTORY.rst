@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.4.0 (2014-08-xx)
+++++++++++++++++++
+- Add suppport for Scilab 5.4
+
+
 0.3.0 (2014-08-23)
 ++++++++++++++++++
 - Allow keyword arguments in functions: `octave.plot([1,2,3], linewidth=2))`
