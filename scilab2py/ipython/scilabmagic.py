@@ -72,8 +72,10 @@ _mimetypes = {'png': 'image/png',
 
 @magics_class
 class ScilabMagics(Magics):
+
     """A set of magics useful for interactive work with Scilab via scilab2py.
     """
+
     def __init__(self, shell):
         """
         Parameters
@@ -148,31 +150,30 @@ class ScilabMagics(Magics):
         '-i', '--input', action='append',
         help='Names of input variables to be pushed to Scilab. Multiple names '
              'can be passed, separated by commas with no whitespace.'
-        )
+    )
     @argument(
         '-o', '--output', action='append',
         help='Names of variables to be pulled from Scilab after executing cell '
              'body. Multiple names can be passed, separated by commas with no '
              'whitespace.'
-        )
+    )
     @argument(
         '-f', '--format', action='store',
         help='Plot format (png, svg or jpg).'
-        )
+    )
     @argument(
         '-s', '--size', action='store',
         help='Pixel size of plots, "width,height". Default is "-s 400,250".'
-        )
+    )
     @argument(
         '-g', '--gui', action='store_true', default=False,
         help='Show a gui for plots.  Default is False'
-        )
-
+    )
     @needs_local_scope
     @argument(
         'code',
         nargs='*',
-        )
+    )
     @line_cell_magic
     def scilab(self, line, cell=None, local_ns=None):
         '''
@@ -268,13 +269,15 @@ class ScilabMagics(Magics):
         if args.size is not None:
             size = args.size
         else:
-            size = '400,240'
+            size = '690,540'
         plot_width, plot_height = [int(s) for s in size.split(',')]
 
         try:
-            text_output = str(self._sci.eval(code, plot_dir=plot_dir, plot_format=plot_format,
-                                                                      plot_width=plot_width, plot_height=plot_height,
-                                                                      verbose=False))
+            text_output = str(self._sci.eval(code, plot_dir=plot_dir,
+                                             plot_format=plot_format,
+                                             plot_width=plot_width,
+                                             plot_height=plot_height,
+                                             verbose=False))
         except (scilab2py.Scilab2PyError) as exception:
             msg = str(exception)
             if 'Scilab Syntax Error' in msg:
@@ -333,7 +336,7 @@ __doc__ = __doc__.format(
     SCILAB_DOC=dedent(ScilabMagics.scilab.__doc__),
     SCILAB_PUSH_DOC=dedent(ScilabMagics.scilab_push.__doc__),
     SCILAB_PULL_DOC=dedent(ScilabMagics.scilab_pull.__doc__)
-    )
+)
 
 
 def load_ipython_extension(ip):
