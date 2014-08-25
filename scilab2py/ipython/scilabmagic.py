@@ -226,7 +226,7 @@ class ScilabMagics(Magics):
         # match current working directory
         cwd = os.getcwd().replace('\\', '/')
         try:
-            self._sci.eva("cd %s; getd('.')" % cwd)
+            self._sci.eval("cd %s; getd('.')" % cwd)
         except scilab2py.Scilab2PyError:
             pass
 
