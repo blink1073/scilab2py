@@ -7,16 +7,22 @@
 language: python
 
 env:
-    - CONDA="python=2.7 numpy=1.7.1 scipy=0.12"
-    - CONDA="python=3.3 numpy scipy"
-    - CONDA="python=3.4 numpy scipy"
+    - ENV="python=2.7 numpy=1.7.1 scipy=0.12"
+    - ENV="python=3.3 numpy scipy"
+    - ENV="python=3.4 numpy scipy"
 
 before_install:
   - sudo apt-get update -qq;
-  # download Scilab 5.5.0 and add it to the path
-  - wget http://www.scilab.org/download/5.5.0/scilab-5.5.0.bin.linux-x86_64.tar.gz -O scilab.tar.gz
-  - tar xfz scilab.tar.gz
-  - export PATH="$PWD/scilab-5.5.0/bin:$PATH"
+  # download Scilab and add it to the path
+  - if [[ $ENV == python=3.3* ]]; then
+      wget http://www.scilab.org/download/5.4.1/scilab-5.4.1.bin.linux-x86_64.tar.gz  -O scilab.tar.gz;
+      tar xfz scilab.tar.gz;
+      export PATH="$PWD/scilab-5.4.1/bin:$PATH"
+     else
+      wget http://www.scilab.org/download/5.5.0/scilab-5.5.0.bin.linux-x86_64.tar.gz -O scilab.tar.gz
+      tar xfz scilab.tar.gz
+      export PATH="$PWD/scilab-5.5.0/bin:$PATH"
+    fi
   - scilab -version; true
   # install conda environment
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
@@ -26,7 +32,7 @@ before_install:
   - conda config --set always_yes yes
   - conda update conda
   - conda info -a
-  - travis_retry conda create -n test $CONDA IPython nose pip
+  - travis_retry conda create -n test $ENV IPython nose pip
   - source activate test
   - travis_retry pip install coveralls
 
@@ -36,7 +42,7 @@ install:
 
 script:
     # run coverage on py2.7, regular on others
-  - if [[ $CONDA == python=2.7* ]]; then
+  - if [[ $ENV == python=2.7* ]]; then
       nosetests --exe -v --with-doctest --with-cov --cover-package scilab2py;
     else
       nosetests --exe -v scilab2py;
