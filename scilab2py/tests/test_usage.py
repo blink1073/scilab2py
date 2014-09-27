@@ -54,6 +54,7 @@ class BasicUsageTest(test.TestCase):
     def test_push_pull(self):
         self.sci.push('spam', [1, 2])
         out = self.sci.pull('spam')
+        print(out)
         assert np.allclose(out, np.array([1, 2]))
         self.sci.push(['spam', 'eggs'], ['foo', [1, 2, 3, 4]])
         spam, eggs = self.sci.pull(['spam', 'eggs'])

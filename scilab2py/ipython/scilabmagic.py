@@ -255,29 +255,30 @@ class ScilabMagics(Magics):
                     val = self.shell.user_ns[input]
                 self._sci.push(input, val)
 
-        # generate plots in a temporary directory
-        plot_dir = tempfile.mkdtemp()
+        if args.gui:
+            plot_dir = None
+        else:
+            plot_dir = tempfile.mkdtemp()
 
         if args.format is not None:
             plot_format = args.format
         else:
             plot_format = 'png'
 
-        if args.gui:
-            plot_dir = None
-
         if args.size is not None:
             size = args.size
         else:
             size = '690,540'
         plot_width, plot_height = [int(s) for s in size.split(',')]
+        plot_name = '__ipy_sci_fig_'
 
         try:
-            resp = self._sci.eval(code, plot_dir=plot_dir,
-                                             plot_format=plot_format,
-                                             plot_width=plot_width,
-                                             plot_height=plot_height,
-                                             verbose=False)
+            text_output, value = self._sci.eval(code, plot_dir=plot_dir,
+                                                plot_format=plot_format,
+                                                plot_width=plot_width,
+                                                plot_height=plot_height,
+                                                plot_name=plot_name,
+                                                verbose=False, return_both=True)
         except (scilab2py.Scilab2PyError) as exception:
             msg = str(exception)
             if 'Scilab Syntax Error' in msg:
@@ -285,13 +286,13 @@ class ScilabMagics(Magics):
             msg = re.sub('"""\s+', '"""\n', msg)
             msg = re.sub('\s+"""', '\n"""', msg)
             raise ScilabMagicError(msg)
+
         key = 'ScilabMagic.Scilab'
         display_data = []
 
         # Publish text output
-        if not return_output and not resp is None:
-            if resp != os.getcwd():
-                display_data.append((key, {'text/plain': str(resp)}))
+        if text_output != "None":
+                display_data.append((key, {'text/plain': text_output}))
 
         # Publish images
         images = []
@@ -317,7 +318,7 @@ class ScilabMagics(Magics):
             self._publish_display_data(source=source, data=data)
 
         if return_output:
-            return resp
+            return value
 
 
 __doc__ = __doc__.format(

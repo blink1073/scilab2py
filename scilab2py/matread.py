@@ -76,7 +76,7 @@ class MatRead(object):
         """
         data = loadmat(self.out_file)
         for key in list(data.keys()):
-            if key.startswith('_') and not key == '_':
+            if key.startswith('_') and not key == '_ans':
                 del data[key]
             else:
                 data[key] = get_data(data[key])

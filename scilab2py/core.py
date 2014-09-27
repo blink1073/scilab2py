@@ -11,6 +11,7 @@ import os
 import re
 import atexit
 import glob
+import logging
 import signal
 import subprocess
 import sys
@@ -67,8 +68,7 @@ class Scilab2Py(object):
             self.logger = logger
         else:
             self.logger = get_log()
-        import logging
-        self.logger.setLevel(logging.ERROR)
+        #self.logger.setLevel(logging.DEBUG)
         self._session = None
         self.restart()
 
@@ -168,7 +168,7 @@ class Scilab2Py(object):
         if isinstance(var, (str, unicode)):
             var = [var]
         argout_list, save_line = self._reader.setup(len(var), var)
-        data = self.eval(save_line, verbose=verbose, timeout=timeout)
+        data = self.eval(save_line, verbose=verbose, timeout=timeout, return_ans=True)
         if isinstance(data, dict) and not isinstance(data, Struct):
             return [data.get(v, None) for v in argout_list]
         else:
@@ -176,7 +176,8 @@ class Scilab2Py(object):
 
     def eval(self, cmds, verbose=False, timeout=None, log=True,
              plot_dir=None, plot_name='plot', plot_format='png',
-             plot_width=620, plot_height=590):
+             plot_width=620, plot_height=590, return_ans=False,
+             return_both=False):
         """
         Perform Scilab command or commands.
 
@@ -201,6 +202,13 @@ class Scilab2Py(object):
             The plot with in pixels.
         plot_height: int, optional
             The plot height in pixels.
+        return_ans : bool, optional
+            If True, force return the result of "ans" instead of the printed output.
+            If False, the result of "ans" will be returned if "ans =" appears in
+            the output.
+        return_both : bool, optional
+            If True, return an (printed output, value) tuple. If "ans =" is in the printed output,
+            the printed output will have that portion removed.
 
         Returns
         -------
@@ -227,20 +235,6 @@ class Scilab2Py(object):
 
         if timeout is None:
             timeout = self.timeout
-
-        for cmd in reversed(cmds):
-
-            match = re.match('([a-z][a-zA-Z0-9_]*) *=', cmd)
-            if match and not cmd.strip().endswith(';'):
-                cmds.append('ans = %s' % match.groups()[0])
-                break
-
-            match = re.match('([a-z][a-zA-Z0-9_]*)\Z', cmd.strip())
-            if match and not cmd.strip().endswith(';'):
-                cmds.append('ans = %s' % match.groups()[0])
-                break
-
-        cmds.append('if (exists("ans")) ; _ans = ans; end')
 
         pre_call = ''
         post_call = ''
@@ -293,20 +287,46 @@ class Scilab2Py(object):
             return 'Scilab Session Interrupted'
 
         outfile = self._reader.out_file
-        if os.path.exists(outfile) and os.stat(outfile).st_size:
+        data_available = os.path.exists(outfile) and os.stat(outfile).st_size
+        if return_both:
+            return_ans = True
+        data = None
+        if ('ans  =' in resp or return_ans) and data_available:
             try:
                 data = self._reader.extract_file()
             except (TypeError, IOError) as e:
                 self.logger.debug(e)
             else:
                 if data is not None:
-                    if verbose and log:
-                        self.logger.info(data)
+                    if verbose:
+                        self.logger.info(resp)
                     elif log:
-                        self.logger.debug(data)
-                    resp = data
+                        self.logger.debug(resp)
 
-        if not resp in ['', []]:
+        if not data is None:
+            if "ans  =" in resp:
+                index = resp.rindex('ans  =')
+                before = resp[:index]
+                after = resp[index:]
+                endstrip = False
+                for line in after.splitlines()[1:]:
+                    if endstrip or not line.startswith(' '):
+                        endstrip = True
+                        before += line + '\n'
+                resp = before
+
+            if return_both:
+                return resp, data
+
+            else:
+                if resp:
+                    print(resp)
+                return data
+
+        elif return_both:
+            return resp, None
+
+        else:
             return resp
 
     def restart(self):
@@ -421,6 +441,7 @@ class Scilab2Py(object):
         if inputs:
             argin_list, load_line = self._writer.create_file(inputs)
             call_line += ', '.join(argin_list)
+            eval_kwargs['return_ans'] = True
 
         if prop_vals:
             if inputs:
@@ -542,7 +563,7 @@ class _Reader(object):
         buf = ''
         while 1:
             try:
-                buf += os.read(self.fid, 1024).decode('utf8')
+                buf += os.read(self.fid, 1024).decode('utf8', 'replace')
             except:
                 self.queue.put(None)
                 return
@@ -597,7 +618,8 @@ class _Session(object):
         Matlab compatibilty mode.
 
         """
-        errmsg = ('\n\nPlease install Scilab and put it in your path\n')
+        errmsg = ('\n\nScilab not found.  Please see documentation at:\n'
+                  'http://blink1073.github.io/scilab2py/source/installation.html')
         ON_POSIX = 'posix' in sys.builtin_module_names
         self.rfid, wpipe = os.pipe()
         rpipe, self.wfid = os.pipe()
@@ -652,52 +674,54 @@ class _Session(object):
                 os.remove(self.outfile)
             except OSError as e:
                 self.logger.debug(e)
+        outfile = self.outfile
 
         # use ascii code 2 for start of text, 3 for end of text, and
         # 24 to signal an error
-        exprs = []
-        for cmd in cmds:
-            items = cmd.replace(';', '\n').split('\n')
-            exprs.extend([i.strip() for i in items
-                          if i.strip()
-                          and not i.strip().startswith(('%', '#'))])
+        expr = '\n'.join(cmds)
 
-        expr = '\n'.join(exprs)
-        expr = expr.replace('"', '""')
-        expr = expr.replace("'", "''")
-        expr = expr.replace('\n', ';')
-
-        self.logger.debug(expr)
-
+                # use ascii code 2 for start of text, 3 for end of text, and
+        # 24 to signal an error
         output = """
-        %s;
+        %(pre_call)s
+
         clear("ans");
+        clear("_");
+        clear("a__");
         disp(char(2));
-        if execstr("%s", "errcatch") <> 0 then
-            disp(lasterror())
-            disp(char(24))
-        else
-            if exists("_ans") then
-                if type(_ans) == 4 then
-                    _ans = double(_ans)
-                end
-                if or(type(_ans) == [1,2,3,5,6,7,8,10]) then
-                    _ = _ans;
+
+        try
+            %(expr)s
+            if exists("ans") == 1 then
+               _ans = ans;
+            end
+
+        catch
+            disp(lasterror());
+            disp(char(24));
+        end
+
+        if exists("_ans") == 1
+            if type(_ans) == 4 then
+                   _ans = double(_ans)
+            end
+            if or(type(_ans) == [1,2,3,5,6,7,8,10]) then
                     if exists("a__") == 0 then
                         try
-                            savematfile -v6 %s _;
+                            savematfile -v6 %(outfile)s _ans;
                         catch
-                            disp(_)
+                            disp(_ans)
                         end
                     end
                 elseif type(_ans)
                     disp(_ans);
                 end
-                clear("_ans")
-            end
         end
-        %s
-        disp(char(3))""" % (pre_call, expr, self.outfile, post_call)
+
+        %(post_call)s
+
+        disp(char(3))
+        """ % locals()
 
         if len(cmds) == 5:
             main_line = cmds[2].strip()
@@ -708,7 +732,7 @@ class _Session(object):
 
         self.write(output + '\n')
         self.expect(chr(2))
-        self.logger.debug('step 1')
+
         debug_prompt = ("Type 'resume' or 'abort' to return to "
                         "standard level prompt.")
 
