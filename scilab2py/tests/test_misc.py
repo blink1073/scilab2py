@@ -202,15 +202,26 @@ class MiscTests(test.TestCase):
         sobj = StringIO()
         hdlr = logging.StreamHandler(sobj)
         hdlr.setLevel(logging.DEBUG)
-        self.oc.logger.addHandler(hdlr)
+        self.sci.logger.addHandler(hdlr)
 
-        self.oc.logger.setLevel(logging.DEBUG)
+        self.sci.logger.setLevel(logging.DEBUG)
 
-        ans = self.oc.eval("""
+        ans = self.sci.eval("""
     a =1
-    a + 1
+    a + 1;
     b = 3
     b + 1""")
         text = hdlr.stream.getvalue().strip()
+
         assert ans == 4
-        assert text.endswith('\na =  1\nans =  2\nb =  3')
+        assert text.endswith('\na =  1\nb =  3\nans =  4')
+
+
+if __name__ == '__main__':
+    print('hey hey')
+
+    sci = Scilab2Py()
+    print(THIS_DIR)
+    sci.getd(THIS_DIR)
+    print('what what')
+    test.run_module_suite()

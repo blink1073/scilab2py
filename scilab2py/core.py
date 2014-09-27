@@ -68,7 +68,7 @@ class Scilab2Py(object):
             self.logger = logger
         else:
             self.logger = get_log()
-        #self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logging.DEBUG)
         self._session = None
         self.restart()
 
@@ -174,10 +174,9 @@ class Scilab2Py(object):
         else:
             return data
 
-    def eval(self, cmds, verbose=False, timeout=None, log=True,
+    def eval(self, cmds, verbose=True, timeout=None, log=True,
              plot_dir=None, plot_name='plot', plot_format='png',
-             plot_width=620, plot_height=590, return_ans=False,
-             return_both=False):
+             plot_width=620, plot_height=590, return_both=False):
         """
         Perform Scilab command or commands.
 
@@ -202,10 +201,6 @@ class Scilab2Py(object):
             The plot with in pixels.
         plot_height: int, optional
             The plot height in pixels.
-        return_ans : bool, optional
-            If True, force return the result of "ans" instead of the printed output.
-            If False, the result of "ans" will be returned if "ans =" appears in
-            the output.
         return_both : bool, optional
             If True, return an (printed output, value) tuple. If "ans =" is in the printed output,
             the printed output will have that portion removed.
@@ -287,47 +282,25 @@ class Scilab2Py(object):
             return 'Scilab Session Interrupted'
 
         outfile = self._reader.out_file
-        data_available = os.path.exists(outfile) and os.stat(outfile).st_size
-        if return_both:
-            return_ans = True
+
         data = None
-        if ('ans  =' in resp or return_ans) and data_available:
+        if os.path.exists(outfile) and os.stat(outfile).st_size:
             try:
                 data = self._reader.extract_file()
             except (TypeError, IOError) as e:
                 self.logger.debug(e)
-            else:
-                if data is not None:
-                    if verbose:
-                        self.logger.info(resp)
-                    elif log:
-                        self.logger.debug(resp)
 
-        if not data is None:
-            if "ans  =" in resp:
-                index = resp.rindex('ans  =')
-                before = resp[:index]
-                after = resp[index:]
-                endstrip = False
-                for line in after.splitlines()[1:]:
-                    if endstrip or not line.startswith(' '):
-                        endstrip = True
-                        before += line + '\n'
-                resp = before
+        resp = resp.strip()
 
-            if return_both:
-                return resp, data
+        if resp:
+            if verbose:
+                print(resp)
+            self.logger.info(resp)
 
-            else:
-                if resp:
-                    print(resp)
-                return data
-
-        elif return_both:
-            return resp, None
-
+        if return_both:
+            return resp, data
         else:
-            return resp
+            return data
 
     def restart(self):
         """Restart an Scilab session in a clean state
@@ -406,6 +379,7 @@ class Scilab2Py(object):
             If the function call is unsucessful.
         """
         nout = kwargs.pop('nout', get_nout())
+
         argout_list = ['ans']
         if '=' in func:
             nout = 0
@@ -441,7 +415,6 @@ class Scilab2Py(object):
         if inputs:
             argin_list, load_line = self._writer.create_file(inputs)
             call_line += ', '.join(argin_list)
-            eval_kwargs['return_ans'] = True
 
         if prop_vals:
             if inputs:
@@ -484,9 +457,10 @@ class Scilab2Py(object):
         doc = "No documentation available for `%s`" % name
 
         try:
-            typeof = self.eval('typeof(%s)' % name)
+            typeof = self.eval('typeof(%s)' % name, verbose=False)
 
-        except Scilab2PyError:
+        except Scilab2PyError as e:
+            import pdb; pdb.set_trace()
             raise Scilab2PyError('No function named `%s`' % name)
 
         if typeof == 'fptr':
@@ -494,7 +468,7 @@ class Scilab2Py(object):
 
         elif typeof == 'function':
 
-            lines = self.eval('fun2string(%s)' % name)
+            lines = self.eval('fun2string(%s)' % name, verbose=False)
 
             if lines and '!' in lines:
                 lines = lines[lines.index('!'):]
@@ -666,7 +640,17 @@ class _Session(object):
             raise Scilab2PyError('Session Closed, try a restart()')
 
         if self._first:
-            self.write('try;getd(".");catch;end\n')
+            self.write("""
+                try
+                  getd(".");
+                catch
+                end
+                errcatch(31, "stop");
+                errcatch(3, "stop");
+                errcatch(34, "stop");
+                errcatch(46, "stop");
+                errcatch(47, "stop");
+                """)
             self._first = False
 
         if os.path.exists(self.outfile):
@@ -674,6 +658,7 @@ class _Session(object):
                 os.remove(self.outfile)
             except OSError as e:
                 self.logger.debug(e)
+
         outfile = self.outfile
 
         # use ascii code 2 for start of text, 3 for end of text, and
@@ -688,18 +673,18 @@ class _Session(object):
         clear("ans");
         clear("_");
         clear("a__");
-        disp(char(2));
 
         try
+            disp(char(2));
             %(expr)s
             if exists("ans") == 1 then
                _ans = ans;
             end
-
         catch
             disp(lasterror());
             disp(char(24));
         end
+
 
         if exists("_ans") == 1
             if type(_ans) == 4 then
@@ -731,6 +716,7 @@ class _Session(object):
         self.logger.debug(output)
 
         self.write(output + '\n')
+
         self.expect(chr(2))
 
         debug_prompt = ("Type 'resume' or 'abort' to return to "
@@ -742,6 +728,13 @@ class _Session(object):
 
             if chr(3) in line:
                 break
+
+            elif '!--error' in line:
+                errstr = '\n'.join([line, self.readline()])
+                msg = ('Scilab2Py Encountered an error, closing session:'
+                     '\n%s' % errstr)
+                self.close()
+                raise Scilab2PyError(msg)
 
             elif chr(24) in line:
                 msg = ('Scilab2Py tried to run:\n"""\n{0}\n"""\n'
@@ -791,7 +784,7 @@ class _Session(object):
                 if val is None:
                     self.close()
                     return
-                else:
+                elif val.strip():
                     return val
             time.sleep(1e-6)
             if (time.time() - t0) > self.timeout:
