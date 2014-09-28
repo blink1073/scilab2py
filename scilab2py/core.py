@@ -28,7 +28,7 @@ from scilab2py.compat import PY2, queue, unicode
 
 class Scilab2Py(object):
 
-    """Manages a Scliab session.
+    """Manages a Scilab session.
 
     Uses MAT files to pass data between Scilab and Numpy.
     The function must either exist as an file in this directory or
@@ -68,7 +68,7 @@ class Scilab2Py(object):
             self.logger = logger
         else:
             self.logger = get_log()
-        self.logger.setLevel(logging.DEBUG)
+        #self.logger.setLevel(logging.DEBUG)
         self._session = None
         self.restart()
 
@@ -168,7 +168,7 @@ class Scilab2Py(object):
         if isinstance(var, (str, unicode)):
             var = [var]
         argout_list, save_line = self._reader.setup(len(var), var)
-        data = self.eval(save_line, verbose=verbose, timeout=timeout, return_ans=True)
+        data = self.eval(save_line, verbose=verbose, timeout=timeout)
         if isinstance(data, dict) and not isinstance(data, Struct):
             return [data.get(v, None) for v in argout_list]
         else:
@@ -501,10 +501,10 @@ class Scilab2Py(object):
 
         """
         # needed for help(Scilab2Py())
-        if attr == '__name__':
-            return super(Scilab2Py, self).__getattr__(attr)
-        elif attr == '__file__':
+        if attr == '__file__':
             return __file__
+        if attr.startswith('__'):
+            return super(Scilab2Py, self).__getattr__(attr)
         # close_ -> close
         if attr[-1] == "_":
             name = attr[:-1]
@@ -645,11 +645,6 @@ class _Session(object):
                   getd(".");
                 catch
                 end
-                errcatch(31, "stop");
-                errcatch(3, "stop");
-                errcatch(34, "stop");
-                errcatch(46, "stop");
-                errcatch(47, "stop");
                 """)
             self._first = False
 
@@ -671,8 +666,8 @@ class _Session(object):
         %(pre_call)s
 
         clear("ans");
-        clear("_");
         clear("a__");
+        clear("_ans");
 
         try
             disp(char(2));

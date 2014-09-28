@@ -149,8 +149,39 @@ class MiscTests(test.TestCase):
         x = self.sci.pull(name)
         assert x == 1
 
+    def _interrupted_method(self, cmd):
+
+        def action():
+            time.sleep(1.0)
+            thread.interrupt_main()
+
+        interrupter = threading.Thread(target=action)
+        interrupter.start()
+
+        try:
+            self.sci.eval(cmd)
+        except Scilab2PyError as e:
+            assert 'Session Interrupted' in str(e)
+
+    def test_syntax_error(self):
+        """Make sure a syntax error in Scilab throws an Scilab2PyError
+        """
+        self._interrupted_method("a='1")
+        self._interrupted_method("a=1+*3")
+
+        self.sci.push('a', 1)
+        a = self.sci.pull('a')
+        self.assertEqual(a, 1)
+
     def test_syntax_error_embedded(self):
-        test.assert_raises(Scilab2PyError, self.sci.eval, "a='1")
+        def action():
+            time.sleep(1.0)
+            thread.interrupt_main()
+
+        interrupter = threading.Thread(target=action)
+        interrupter.start()
+
+        self._interrupted_method("a='1")
         self.sci.push('b', 1)
         x = self.sci.pull('b')
         assert x == 1
@@ -175,13 +206,7 @@ class MiscTests(test.TestCase):
 
         self.sci.push('a', 10)
 
-        try:
-            self.sci.eval("for i=1:30; xpause(1e6); end; kladjflsd")
-        except Scilab2PyError as e:
-            if 'Session Interrupted' in str(e):
-                pass
-            else:
-                raise Scilab2PyError(e)
+        self._interrupted_method("for i=1:30; xpause(1e6); end; kladjflsd")
 
         if os.name == 'nt':
             self.assertRaises(Scilab2PyError, self.sci.pull, 'a')

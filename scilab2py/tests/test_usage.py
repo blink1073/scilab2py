@@ -103,16 +103,6 @@ class BasicUsageTest(test.TestCase):
         self.assertEqual(test2['eggs']['spam'], 'eggs')
         self.assertEqual(test2.foo.bar, 10)
 
-    def test_syntax_error(self):
-        """Make sure a syntax error in Scilab throws an Scilab2PyError
-        """
-        self.assertRaises(Scilab2PyError, self.sci.eval, "a='1")
-        self.assertRaises(Scilab2PyError, self.sci.eval, "a=1+*3")
-
-        self.sci.push('a', 1)
-        a = self.sci.pull('a')
-        self.assertEqual(a, 1)
-
     def test_scilab_error(self):
         self.assertRaises(Scilab2PyError, self.sci.eval, 'a = ones2(1)')
 

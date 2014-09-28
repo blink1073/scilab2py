@@ -2,6 +2,14 @@
 import codecs
 import unittest
 import sys
+import threading
+import time
+
+try:
+    import thread
+except ImportError:
+    import _thread as thread
+
 from IPython.testing.globalipapp import get_ipython
 
 try:
@@ -83,10 +91,18 @@ class ScilabMagicTest(unittest.TestCase):
             "-i var_not_defined 1+1")
 
     def test_scilab_syntax_error(self):
+        def action():
+            time.sleep(1.0)
+            thread.interrupt_main()
+
+        interrupter = threading.Thread(target=action)
+        interrupter.start()
+
         try:
             self.ip.run_cell_magic('scilab', '', "a='1")
-        except scilabmagic.ScilabMagicError:
-            pass
+        except scilabmagic.ScilabMagicError as e:
+            assert 'Session Interrupted, Restarting' in str(e)
+
         result = self.ip.run_line_magic('scilab', '[1, 2, 3] + 1;')
         npt.assert_array_equal(result, [[2, 3, 4]])
 
