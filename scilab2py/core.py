@@ -460,8 +460,10 @@ class Scilab2Py(object):
             typeof = self.eval('typeof(%s)' % name, verbose=False)
 
         except Scilab2PyError as e:
-            import pdb; pdb.set_trace()
-            raise Scilab2PyError('No function named `%s`' % name)
+            if 'timed out' in str(e).lower():
+                raise e
+            else:
+                raise Scilab2PyError('No function named `%s`' % name)
 
         if typeof == 'fptr':
             doc = "`%s` is a built-in Scilab function." % name
@@ -646,7 +648,6 @@ class _Session(object):
                 catch
                 end
                 """)
-            self._first = False
 
         if os.path.exists(self.outfile):
             try:
@@ -712,7 +713,11 @@ class _Session(object):
 
         self.write(output + '\n')
 
-        self.expect(chr(2))
+        if self._first:
+            self.expect(chr(2))
+        else:
+            self.expect(chr(2), timeout=1)
+        self._first = False
 
         debug_prompt = ("Type 'resume' or 'abort' to return to "
                         "standard level prompt.")
@@ -755,21 +760,23 @@ class _Session(object):
         if not os.name == 'nt':
             self.proc.send_signal(signal.SIGINT)
 
-    def expect(self, strings):
+    def expect(self, strings, timeout=None):
         """Look for a string or strings in the incoming data"""
         if not isinstance(strings, list):
             strings = [strings]
         lines = []
         while 1:
-            line = self.readline()
+            line = self.readline(timeout)
             lines.append(line)
             if line:
                 for string in strings:
                     if re.search(string, line):
                         return '\n'.join(lines)
 
-    def readline(self):
+    def readline(self, timeout=None):
         t0 = time.time()
+        if timeout is None:
+            timeout = self.timeout
         while 1:
             try:
                 val = self.read_queue.get_nowait()
@@ -782,9 +789,9 @@ class _Session(object):
                 elif val.strip():
                     return val
             time.sleep(1e-6)
-            if (time.time() - t0) > self.timeout:
+            if (time.time() - t0) > timeout:
                 self.interrupt()
-                raise Scilab2PyError('Timed Out, interrupting')
+                raise Scilab2PyError('Timed out')
 
     def write(self, message):
         """Write a message to the process using utf-8 encoding"""
