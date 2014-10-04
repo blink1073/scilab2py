@@ -19,9 +19,9 @@ before_install:
       tar xfz scilab.tar.gz;
       export PATH="$PWD/scilab-5.4.1/bin:$PATH";
      else
-      wget http://www.scilab.org/download/5.5.0/scilab-5.5.0.bin.linux-x86_64.tar.gz -O scilab.tar.gz;
+      wget http://www.scilab.org/download/5.5.1/scilab-5.5.1.bin.linux-x86_64.tar.gz -O scilab.tar.gz;
       tar xfz scilab.tar.gz;
-      export PATH="$PWD/scilab-5.5.0/bin:$PATH";
+      export PATH="$PWD/scilab-5.5.1/bin:$PATH";
     fi
   - scilab -version; true
   # install conda environment
