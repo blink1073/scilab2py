@@ -276,10 +276,8 @@ class Scilab2Py(object):
                                           timeout=timeout, pre_call=pre_call,
                                           post_call=post_call)
         except KeyboardInterrupt:
-            if os.name == 'nt':
-                self.restart()
-                raise Scilab2PyError('Session Interrupted, Restarting')
-            return 'Scilab Session Interrupted'
+            self.restart()
+            raise Scilab2PyError('Session Interrupted, Restarting')
 
         outfile = self._reader.out_file
 
@@ -460,10 +458,7 @@ class Scilab2Py(object):
             typeof = self.eval('typeof(%s)' % name, verbose=False)
 
         except Scilab2PyError as e:
-            if 'timed out' in str(e).lower():
-                raise e
-            else:
-                raise Scilab2PyError('No function named `%s`' % name)
+            raise Scilab2PyError('Could not find function named `%s`' % name)
 
         if typeof == 'fptr':
             doc = "`%s` is a built-in Scilab function." % name
