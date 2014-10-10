@@ -656,7 +656,13 @@ class _Session(object):
         # 24 to signal an error
         expr = '\n'.join(cmds)
 
-                # use ascii code 2 for start of text, 3 for end of text, and
+        # scilab cannot handle "#" commented lines
+        # try and remove them
+        expr = """plot([1,2,3])
+# brings up a Scilab plotting GUI"""
+        expr = re.sub(r'[\A\n]\s*#', '//', expr)
+
+        # use ascii code 2 for start of text, 3 for end of text, and
         # 24 to signal an error
         output = """
         %(pre_call)s
