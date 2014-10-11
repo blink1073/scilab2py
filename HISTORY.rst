@@ -3,6 +3,19 @@
 Release History
 ---------------
 
+0.5.0 (2014-10-11)
+++++++++++++++++++
+- Make `eval` output match Octave session output.
+  If verbose=True, print all Octave output.
+  Return the last "ans" from Octave, if available.
+  If you need the response, use `return_both` to get the
+  `(resp, ans)` pair back
+- As a result of the previous, Syntax Errors in Scilab code
+  will now result in a closed session.
+- Fix sizing of plots when in inline mode.
+- Numerous corner case bug fixes.
+
+
 0.4.0 (2014-08-30)
 ++++++++++++++++++
 - Add suppport for Scilab 5.4
