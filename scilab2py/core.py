@@ -658,8 +658,6 @@ class _Session(object):
 
         # scilab cannot handle "#" commented lines
         # try and remove them
-        expr = """plot([1,2,3])
-# brings up a Scilab plotting GUI"""
         expr = re.sub(r'[\A\n]\s*#', '//', expr)
 
         # use ascii code 2 for start of text, 3 for end of text, and
