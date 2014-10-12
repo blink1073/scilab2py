@@ -52,7 +52,7 @@ class MiscTests(test.TestCase):
         resp = '\n'.join(lines)
         assert 'zeros(A__)' in resp
         print(resp)
-        assert '0.0' in resp
+        assert '0.' in resp
         assert 'loadmatfile ' in resp
 
         # now make an object with a desired logger
@@ -197,31 +197,17 @@ class MiscTests(test.TestCase):
 
     def test_interrupt(self):
 
-        def action():
-            time.sleep(1.0)
-            thread.interrupt_main()
-
-        interrupter = threading.Thread(target=action)
-        interrupter.start()
-
         self.sci.push('a', 10)
 
         self._interrupted_method("for i=1:30; xpause(1e6); end; kladjflsd")
 
-        if os.name == 'nt':
-            self.assertRaises(Scilab2PyError, self.sci.pull, 'a')
-            self.sci.push('c', 10)
-            assert self.sci.pull('c') == 10
-        else:
-            assert self.sci.pull('a') == 10
+        self.assertRaises(Scilab2PyError, self.sci.pull, 'a')
+        self.sci.push('c', 10)
+        assert self.sci.pull('c') == 10
 
     def test_clear(self):
         """Make sure clearing variables does not mess anything up."""
         self.sci.clear()
-
-    def test_prev_ans(self):
-        self.sci.eval("5")
-        assert self.sci.eval('_') == 5
 
     def test_multiline_statement(self):
         sobj = StringIO()
@@ -236,10 +222,7 @@ class MiscTests(test.TestCase):
     a + 1;
     b = 3
     b + 1""")
-        text = hdlr.stream.getvalue().strip()
-
         assert ans == 4
-        assert text.endswith('\na =  1\nb =  3\nans =  4')
 
 
 if __name__ == '__main__':
