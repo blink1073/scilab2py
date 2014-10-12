@@ -226,10 +226,4 @@ class MiscTests(test.TestCase):
 
 
 if __name__ == '__main__':
-    print('hey hey')
-
-    sci = Scilab2Py()
-    print(THIS_DIR)
-    sci.getd(THIS_DIR)
-    print('what what')
     test.run_module_suite()
