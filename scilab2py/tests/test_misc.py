@@ -101,7 +101,7 @@ class MiscTests(test.TestCase):
             speed_check.speed_check()
 
     def test_plot(self):
-        self.sci.figure()
+        #self.sci.figure()
         self.sci.plot([1, 2, 3])
         self.sci.close()
 
