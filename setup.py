@@ -11,7 +11,7 @@ REQUIRES = ["numpy (>= 1.7.1)", "scipy (>= 0.12)"]
 PACKAGES = [DISTNAME, '%s.tests' % DISTNAME, '%s/ipython' % DISTNAME,
             '%s/ipython/tests' % DISTNAME]
 PACKAGE_DATA = {DISTNAME: ['tests/*.sci']}
-CLASSIFIERS = """\
+CLASSIFIERS = """
 Development Status :: 4 - Beta
 Intended Audience :: Developers
 Intended Audience :: Science/Research
@@ -51,6 +51,6 @@ setup(
     platforms=["Any"],
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
-    classifiers=filter(None, CLASSIFIERS.split('\n')),
+    classifiers=list(filter(None, CLASSIFIERS.split('\n'))),
     requires=REQUIRES
  )
