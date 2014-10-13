@@ -68,7 +68,7 @@ class Scilab2Py(object):
             self.logger = logger
         else:
             self.logger = get_log()
-        self.logger.setLevel(logging.DEBUG)
+        #self.logger.setLevel(logging.DEBUG)
         self._session = None
         self.restart()
 
@@ -821,6 +821,9 @@ class _Session(object):
             self.write('\nexit\n')
         except Exception as e:  # pragma: no cover
             self.logger.debug(e)
+
+        if self.proc is None:
+            return
 
         try:
             self.proc.terminate()
