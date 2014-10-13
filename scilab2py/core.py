@@ -728,14 +728,6 @@ class _Session(object):
             if chr(3) in line:
                 break
 
-            elif '!--error' in line:
-                errstr = '\n'.join([line, self.readline()])
-                msg = ('Scilab2Py Encountered an error, closing session:'
-                     '\n%s' % errstr)
-                if os.name == 'nt':
-                    self.close()
-                    raise Scilab2PyError(msg)
-
             elif chr(24) in line:
                 msg = ('Scilab2Py tried to run:\n"""\n{0}\n"""\n'
                        'Scilab returned:\n{1}'
