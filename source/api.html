@@ -5,17 +5,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>API Reference &mdash; Scilab2Py 0.4 documentation</title>
+    <title>API Reference &mdash; Scilab2Py 0.5 documentation</title>
     
     <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootswatch-3.1.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.2.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.4',
+        VERSION:     '0.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,9 +26,9 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-3.1.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.2.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Scilab2Py 0.4 documentation" href="../index.html" />
+    <link rel="top" title="Scilab2Py 0.5 documentation" href="../index.html" />
     <link rel="next" title="Information" href="info.html" />
     <link rel="prev" title="Conversions" href="conversions.html" />
 <meta charset='utf-8'>
@@ -53,7 +53,7 @@
         </button>
         <a class="navbar-brand" href="../index.html">
           Scilab2Py</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.5</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -159,7 +159,7 @@
 <dl class="class">
 <dt id="scilab2py.Scilab2Py">
 <em class="property">class </em><tt class="descclassname">scilab2py.</tt><tt class="descname">Scilab2Py</tt><big>(</big><em>executable=None</em>, <em>logger=None</em>, <em>timeout=None</em>, <em>oned_as='row'</em>, <em>temp_dir=None</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py" title="Permalink to this definition">¶</a></dt>
-<dd><p>Manages a Scliab session.</p>
+<dd><p>Manages a Scilab session.</p>
 <p>Uses MAT files to pass data between Scilab and Numpy.
 The function must either exist as an file in this directory or
 on Scilab&#8217;s path.</p>
@@ -292,7 +292,7 @@ a shared memory (tmpfs) path.</p>
 
 <dl class="method">
 <dt id="scilab2py.Scilab2Py.eval">
-<tt class="descname">eval</tt><big>(</big><em>cmds</em>, <em>verbose=False</em>, <em>timeout=None</em>, <em>log=True</em>, <em>plot_dir=None</em>, <em>plot_name='plot'</em>, <em>plot_format='png'</em>, <em>plot_width=620</em>, <em>plot_height=590</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.eval" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">eval</tt><big>(</big><em>cmds</em>, <em>verbose=True</em>, <em>timeout=None</em>, <em>log=True</em>, <em>plot_dir=None</em>, <em>plot_name='plot'</em>, <em>plot_format='png'</em>, <em>plot_width=620</em>, <em>plot_height=590</em>, <em>return_both=False</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py.eval" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform Scilab command or commands.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -333,6 +333,11 @@ xxx is the <cite>plot_format</cite>.</p>
 <p><strong>plot_height: int, optional</strong></p>
 <blockquote>
 <div><p>The plot height in pixels.</p>
+</div></blockquote>
+<p><strong>return_both</strong> : bool, optional</p>
+<blockquote>
+<div><p>If True, return an (printed output, value) tuple. If &#8220;ans =&#8221; is in the printed output,
+the printed output will have that portion removed.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -439,7 +444,7 @@ Any other Scilab2Py objects, you must restart them.</p>
     </p>
     <p>
         &copy; Copyright 2011 - 2014, Scilab2Py contributors.<br/>
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.<br/>
     </p>
   </div>
 </footer>
