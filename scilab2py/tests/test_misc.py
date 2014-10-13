@@ -174,12 +174,6 @@ class MiscTests(test.TestCase):
         self.assertEqual(a, 1)
 
     def test_syntax_error_embedded(self):
-        def action():
-            time.sleep(1.0)
-            thread.interrupt_main()
-
-        interrupter = threading.Thread(target=action)
-        interrupter.start()
 
         self._interrupted_method("a='1")
         self.sci.push('b', 1)
