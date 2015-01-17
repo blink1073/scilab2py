@@ -56,7 +56,7 @@ class Scilab2Py(object):
     """
 
     def __init__(self, executable=None, logger=None, timeout=None,
-                 oned_as='row', temp_dir=None):
+                 oned_as='row', temp_dir=None, convert_to_float=True):
         """Start Scilab and create our MAT helpers
         """
         self._oned_as = oned_as
@@ -70,7 +70,17 @@ class Scilab2Py(object):
             self.logger = get_log()
         #self.logger.setLevel(logging.DEBUG)
         self._session = None
+        self._convert_to_float = convert_to_float
         self.restart()
+
+    @property
+    def convert_to_float(self):
+        return self._convert_to_float
+
+    @convert_to_float.setter
+    def convert_to_float(self, value):
+        self._writer.convert_to_float = value
+        self._convert_to_float = value
 
     def __enter__(self):
         """Return Scilab object, restart session if necessary"""
@@ -119,6 +129,10 @@ class Scilab2Py(object):
         >>> sci.pull(['x', 'y'])  # doctest: +SKIP
         [u'spam', array([[ 1.,  2.,  3.,  4.]])]
 
+        Note
+        ----
+        Integer type arguments will be converted to floating point
+        unless `convert_to_float=False`.
         """
         if isinstance(name, (str, unicode)):
             vars_ = [var]
@@ -306,7 +320,8 @@ class Scilab2Py(object):
         if self._session:
             self._session.close()
         self._reader = MatRead(self._temp_dir)
-        self._writer = MatWrite(self._temp_dir, self._oned_as)
+        self._writer = MatWrite(self._temp_dir, self._oned_as,
+                                self._convert_to_float)
         self._session = _Session(self._executable,
                                  self._reader.out_file, self.logger)
 
@@ -375,6 +390,11 @@ class Scilab2Py(object):
         ------
         Scilab2PyError
             If the function call is unsucessful.
+
+        Notes
+        -----
+        Integer type arguments will be converted to floating point
+        unless `convert_to_float=False`.
         """
         nout = kwargs.pop('nout', get_nout())
 
@@ -419,7 +439,7 @@ class Scilab2Py(object):
                 call_line += ', '
             call_line += prop_vals
 
-        call_line += ')'
+        call_line += ');'
 
         # create the command and execute in octave
         cmd = [load_line, call_line, save_line]
