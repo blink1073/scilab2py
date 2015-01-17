@@ -40,5 +40,8 @@ gh-pages: clean
 	pip install sphinx-bootstrap-theme numpydoc sphinx ghp-import
 	git checkout master
 	git pull origin master
+	cp scilab2py/tests/*.sci example
+	git commit -a -m "Keep examples in sync"; true
+	git push origin; true
 	make -C docs html
 	ghp-import -n -p -m $(GHP_MSG) docs/_build/html
