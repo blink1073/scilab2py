@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>API Reference &mdash; Scilab2Py 0.5 documentation</title>
+    <title>API Reference &mdash; Scilab2Py 0.6 documentation</title>
     
     <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.5',
+        VERSION:     '0.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -28,7 +28,7 @@
     <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-3.2.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Scilab2Py 0.5 documentation" href="../index.html" />
+    <link rel="top" title="Scilab2Py 0.6 documentation" href="../index.html" />
     <link rel="next" title="Information" href="info.html" />
     <link rel="prev" title="Conversions" href="conversions.html" />
 <meta charset='utf-8'>
@@ -53,12 +53,11 @@
         </button>
         <a class="navbar-brand" href="../index.html">
           Scilab2Py</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.5</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.6</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
           <ul class="nav navbar-nav">
-            <li class="divider-vertical"></li>
             
             
               <li class="dropdown globaltoc-container">
@@ -103,11 +102,11 @@
               
                 
   <li>
-    <a href="conversions.html" title="Previous Chapter: Conversions"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm">&laquo; Conversions</span>
+    <a href="conversions.html" title="Previous Chapter: Conversions"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Conversions</span>
     </a>
   </li>
   <li>
-    <a href="info.html" title="Next Chapter: Information"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm">Information &raquo;</span>
+    <a href="info.html" title="Next Chapter: Information"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Information &raquo;</span>
     </a>
   </li>
               
@@ -158,7 +157,7 @@
 <span id="scilab2py"></span><h2>Scilab2Py<a class="headerlink" href="#module-scilab2py" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="scilab2py.Scilab2Py">
-<em class="property">class </em><tt class="descclassname">scilab2py.</tt><tt class="descname">Scilab2Py</tt><big>(</big><em>executable=None</em>, <em>logger=None</em>, <em>timeout=None</em>, <em>oned_as='row'</em>, <em>temp_dir=None</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">scilab2py.</tt><tt class="descname">Scilab2Py</tt><big>(</big><em>executable=None</em>, <em>logger=None</em>, <em>timeout=None</em>, <em>oned_as='row'</em>, <em>temp_dir=None</em>, <em>convert_to_float=True</em><big>)</big><a class="headerlink" href="#scilab2py.Scilab2Py" title="Permalink to this definition">¶</a></dt>
 <dd><p>Manages a Scilab session.</p>
 <p>Uses MAT files to pass data between Scilab and Numpy.
 The function must either exist as an file in this directory or
@@ -443,7 +442,7 @@ Any other Scilab2Py objects, you must restart them.</p>
       
     </p>
     <p>
-        &copy; Copyright 2011 - 2014, Scilab2Py contributors.<br/>
+        &copy; Copyright 2011 - 2015, Scilab2Py contributors.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.<br/>
     </p>
   </div>
