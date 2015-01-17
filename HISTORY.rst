@@ -3,6 +3,12 @@
 Release History
 ---------------
 
+0.6.0 (2015-01-17)
+++++++++++++++++++
+- Add `convert_to_float` property that is True by default.
+- Suppress output in dynamic function calls (using ';')
+
+
 0.5.0 (2014-10-11)
 ++++++++++++++++++
 - Make `eval` output match Octave session output.
