@@ -43,6 +43,7 @@ install:
 script:
     # run coverage on py2.7, regular on others
   - if [[ $ENV == python=2.7* ]]; then
+      conda install mock
       nosetests --exe -v --with-doctest --with-cov --cover-package scilab2py;
     else
       nosetests --exe -v scilab2py;
