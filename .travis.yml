@@ -8,8 +8,8 @@ language: python
 
 env:
     - ENV="python=2.7 numpy=1.7.1 scipy=0.12"
-    - ENV="python=3.3 numpy scipy"
-    - ENV="python=3.4 numpy scipy"
+    - ENV="python=3.5 numpy scipy"
+    - ENV="python=3.6 numpy scipy"
 
 before_install:
   - sudo apt-get update -qq;

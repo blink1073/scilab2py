@@ -677,7 +677,7 @@ class _Session(object):
 
         # scilab cannot handle "#" commented lines
         # try and remove them
-        expr = re.sub(r'[\A\n]\s*#', '//', expr)
+        expr = re.sub(r'(?:\A|\n)\s*#', '//', expr)
 
         # use ascii code 2 for start of text, 3 for end of text, and
         # 24 to signal an error
