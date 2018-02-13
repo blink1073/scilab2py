@@ -9,6 +9,7 @@ import os
 import inspect
 import dis
 import tempfile
+import sys
 from .compat import PY2
 
 
@@ -43,10 +44,16 @@ def get_nout():
     # nout is two frames back
     frame = frame.f_back.f_back
     bytecode = frame.f_code.co_code
-    instruction = bytecode[frame.f_lasti + 3]
+    if sys.version_info >= (3, 6):
+        instruction = bytecode[frame.f_lasti + 2]
+    else:
+        instruction = bytecode[frame.f_lasti + 3]
     instruction = ord(instruction) if PY2 else instruction
     if instruction == dis.opmap['UNPACK_SEQUENCE']:
-        howmany = bytecode[frame.f_lasti + 4]
+        if sys.version_info >= (3, 6):
+            howmany = bytecode[frame.f_lasti + 3]
+        else:
+            howmany = bytecode[frame.f_lasti + 4]
         howmany = ord(howmany) if PY2 else howmany
         return howmany
     elif instruction in [dis.opmap['POP_TOP'], dis.opmap['PRINT_EXPR']]:
