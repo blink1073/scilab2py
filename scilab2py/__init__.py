@@ -18,7 +18,7 @@ MAT files.  Usage is as simple as:
 
 
 __title__ = 'scilab2py'
-__version__ = '0.6'
+__version__ = '0.6.1'
 __author__ = 'Steven Silvester'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2014 Steven Silvester'
