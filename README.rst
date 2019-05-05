@@ -47,7 +47,8 @@ Features
 
 Installation
 ------------
-You must have Scilab_ 5.4 or newer installed and in your PATH.
+You must have Scilab_ 5.x installed and in your PATH.
+This library does not support Scilab 6.0.
 You must have the Numpy and Scipy libraries installed.
 
 To install Scilab2Py, simply:
