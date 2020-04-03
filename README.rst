@@ -1,5 +1,6 @@
-Scilab2Py: Python to Scilab Bridge
+[Deprecated] Scilab2Py: Python to Scilab Bridge
 ===================================
+This package is officially deprecated, as I no longer have the bandwidth to maintain it.
 
 .. image:: https://badge.fury.io/py/scilab2py.png/
     :target: http://badge.fury.io/py/scilab2py
